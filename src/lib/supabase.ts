@@ -34,6 +34,7 @@ export interface Database {
           identifier?: string
           description?: string | null
         }
+        Relationships: []
       }
       projects: {
         Row: {
@@ -60,6 +61,7 @@ export interface Database {
           team_id?: string
           status?: string
         }
+        Relationships: []
       }
       issues: {
         Row: {
@@ -95,6 +97,7 @@ export interface Database {
           project_id?: string | null
           assignee_id?: string | null
         }
+        Relationships: []
       }
       labels: {
         Row: {
@@ -118,6 +121,7 @@ export interface Database {
           color?: string
           team_id?: string | null
         }
+        Relationships: []
       }
     }
     Views: {
