@@ -1,33 +1,52 @@
-import { Search, ChevronDown, Bell } from 'lucide-react';
+import { Search, ListFilter, SlidersHorizontal, Plus, Bell, ChevronDown } from 'lucide-react';
 
 const Topbar = () => {
   return (
-    <header className="h-12 border-b border-[#2a2c30] flex items-center justify-between px-4 bg-[#141518] text-gray-400">
-      <div className="flex items-center gap-2 hover:bg-white/5 p-1 px-2 rounded cursor-pointer transition-colors">
-        <div className="w-4 h-4 bg-purple-500 rounded text-[10px] flex items-center justify-center text-white">
-          T
-        </div>
-        <span className="text-sm font-medium text-gray-200">Team Linear</span>
-        <ChevronDown size={14} />
-      </div>
+    <header className="h-12 border-b border-[#2A2D35] flex items-center justify-between px-4 bg-[#0D0E11] text-[#E3E4E6] font-sans">
+      <div className="flex items-center gap-3">
+         {/* Team Selector */}
+         <div className="flex items-center gap-2 px-2 py-1 rounded hover:bg-[#2A2D35] cursor-pointer transition-colors group">
+             <div className="w-4 h-4 bg-[#5E6AD2] rounded-[3px] flex items-center justify-center text-[10px] text-white font-bold">L</div>
+             <span className="text-sm font-medium text-[#E3E4E6]">Linear Clone</span>
+             <ChevronDown size={12} className="text-[#7C7F88] group-hover:text-[#E3E4E6]" />
+         </div>
+         
+         <div className="h-4 w-[1px] bg-[#2A2D35]"></div>
 
-      <div className="flex-1 max-w-xl mx-4">
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-gray-400" size={16} />
-          <input 
-            id="search"
-            type="text" 
-            placeholder="Search..." 
-            className="w-full bg-[#1e2024] border border-transparent focus:border-[#2a2c30] rounded-md py-1.5 pl-9 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:outline-none transition-all"
-          />
-        </div>
+         {/* View Tabs - Refined */}
+         <div className="flex items-center gap-1">
+             <div className="px-2 py-1 bg-[#2A2D35] text-[#E3E4E6] rounded flex items-center gap-1.5 text-xs font-medium cursor-default">
+                <ListFilter size={13} className="opacity-70" />
+                <span>All issues</span>
+             </div>
+             <div className="px-2 py-1 text-[#7C7F88] hover:text-[#E3E4E6] hover:bg-white/5 rounded flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors">
+                 <span>Active</span>
+             </div>
+             <div className="px-2 py-1 text-[#7C7F88] hover:text-[#E3E4E6] hover:bg-white/5 rounded flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors">
+                 <span>Backlog</span>
+             </div>
+         </div>
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="hover:text-gray-200 transition-colors">
-          <Bell size={18} />
-        </button>
-        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-blue-500"></div>
+          <div className="relative group w-64 transition-all focus-within:w-80">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#7C7F88] group-focus-within:text-[#E3E4E6]" size={14} />
+              <input 
+                  type="text" 
+                  placeholder="Search issues..." 
+                  className="w-full bg-[#1C1E22] border border-[#2A2D35] focus:border-[#5E6AD2] rounded-md py-1.5 pl-8 pr-3 text-xs text-[#E3E4E6] placeholder-[#7C7F88]/60 focus:outline-none transition-all shadow-sm"
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-0.5">
+                  <span className="text-[10px] text-[#7C7F88] bg-[#2A2D35] px-1 rounded border border-[#3a3d45]">/</span>
+              </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 rounded-full hover:bg-[#2A2D35] flex items-center justify-center cursor-pointer transition-colors text-[#7C7F88] hover:text-[#E3E4E6]">
+                 <Bell size={16} />
+             </div>
+             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 border border-[#2A2D35]"></div>
+          </div>
       </div>
     </header>
   );

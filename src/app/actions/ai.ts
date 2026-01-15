@@ -2,6 +2,33 @@
 
 import { getGeminiModel } from '@/lib/gemini';
 
+function parseJSON(text: string) {
+    try {
+        // 1. Try simple parse
+        return JSON.parse(text);
+    } catch (e) {
+        // 2. Try removing markdown code blocks
+        const cleaned = text.replace(/```json\n?|```/g, '').trim();
+        try {
+            return JSON.parse(cleaned);
+        } catch (e2) {
+            // 3. Try finding the first '{' and last '}'
+            const start = text.indexOf('{');
+            const end = text.lastIndexOf('}');
+            if (start !== -1 && end !== -1) {
+                try {
+                    return JSON.parse(text.substring(start, end + 1));
+                } catch (e3) {
+                    // 4. Try simplified cleanup for common trailing commas or newlines if needed
+                    // For now, let's just throw the original text for debugging if this fails
+                    throw new Error(`Failed to parse JSON: ${text.substring(0, 100)}...`);
+                }
+            }
+            throw e;
+        }
+    }
+}
+
 export async function analyzeIssueAction(title: string, description: string | null) {
     try {
         const model = getGeminiModel();
@@ -9,48 +36,46 @@ export async function analyzeIssueAction(title: string, description: string | nu
         Title: "${title}"
         Description: "${description || 'No description'}"
         
-        Return a JSON object with:
-        - priority: "None" | "Low" | "Medium" | "High" | "Urgent" (inference based on severity)
-        - status: "Backlog" | "Todo" | "In Progress" | "Done" (inference based on phrasing, default to Backlog or Todo)
-        - complexity: number (1-5, where 1 is trivial and 5 is extremely complex)
-        - blockers: string[] (potential risks or missing info)
-        - reasoning: string (brief explanation of why this priority/status was chosen)
+        Return a VALID JSON object (no markdown) with:
+        - priority: "None", "Low", "Medium", "High", or "Urgent"
+        - status: "Backlog", "Todo", "In Progress", or "Done"
+        - complexity: number (1-5)
+        - blockers: string[]
+        - reasoning: string (brief explanation)
         
-        Ensure valid JSON.`;
+        Ensure strictly valid JSON. Do not add comments.`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
+        console.log('AI Response (Analyze):', text); // Debug log
 
-        // Clean up potential markdown code blocks
-        const jsonStr = text.replace(/```json\n?|\n?```/g, '').trim();
-        return JSON.parse(jsonStr);
+        return parseJSON(text);
     } catch (error: any) {
         console.error('AI Analysis failed:', error?.message || error);
-        if (error?.cause) console.error('Caused by:', error.cause);
-        return null;
+        return null; // Fail gracefully
     }
 }
 
 export async function generateIssueDetailsAction(title: string) {
     try {
         const model = getGeminiModel();
-        const prompt = `You are an expert product manager. I will give you a short issue title, and you need to generate a professional, detailed description, and suggest initial metadata.
+        const prompt = `You are an expert product manager. I will give you a short issue title.
         Issue Title: "${title}"
         
-        Return a JSON object with:
-        - description: string (A rich, multi-line markdown description. Include "User Story", "Acceptance Criteria", and "Technical Notes" sections if relevant.)
-        - priority: "None" | "Low" | "Medium" | "High" | "Urgent"
-        - status: "Backlog" | "Todo" | "In Progress" 
+        Return a VALID JSON object (no markdown) with:
+        - description: "A rich, multi-line markdown description."
+        - priority: "None", "Low", "Medium", "High", or "Urgent"
+        - status: "Backlog", "Todo", "In Progress"
         
-        Ensure valid JSON.`;
+        Ensure strictly valid JSON.`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
-        const jsonStr = text.replace(/```json\n?|\n?```/g, '').trim();
-        return JSON.parse(jsonStr);
+        console.log('AI Response (Generate):', text);
+
+        return parseJSON(text);
     } catch (error: any) {
         console.error('AI Generation failed:', error?.message || error);
-        if (error?.cause) console.error('Caused by:', error.cause);
         return null;
     }
 }
@@ -62,24 +87,20 @@ export async function prioritizeBatchAction(issues: any[]) {
 
         if (backlogIssues.length === 0) return { recommendations: [] };
 
-        const prompt = `You are a project manager. Review these backlog issues and identify up to 3 that should be promoted to "Todo" based on implied urgency in their titles or high priority.
+        const prompt = `Review these backlog issues and identify up to 3 that should be promoted to "Todo".
         
-        Issues provided: ${JSON.stringify(backlogIssues)}
+        Issues: ${JSON.stringify(backlogIssues)}
         
-        Return a JSON object with:
-        - recommendations: Array of objects { 
-            id: string, 
-            suggestedStatus: "Todo", 
-            reason: string 
-          }
+        Return a VALID JSON object with:
+        - recommendations: Array of { id: string, suggestedStatus: "Todo", reason: string }
         
-        Only include issues you actually recommend moving. If none are urgent, return empty array.
-        Ensure valid JSON.`;
+        Ensure strictly valid JSON.`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
-        const jsonStr = text.replace(/```json\n?|\n?```/g, '').trim();
-        return JSON.parse(jsonStr);
+        console.log('AI Response (Batch):', text);
+
+        return parseJSON(text);
     } catch (error) {
         console.error('Batch Prioritization failed:', error);
         return { recommendations: [] };

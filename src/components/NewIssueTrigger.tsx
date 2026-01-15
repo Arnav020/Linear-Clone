@@ -32,7 +32,7 @@ export default function NewIssueTrigger() {
     <>
       <button 
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-[#5e6ad2] hover:bg-[#4e5ac2] text-white rounded-[6px] text-sm font-medium transition-colors shadow-sm shadow-[#5e6ad2]/20"
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5E6AD2] hover:bg-[#6B76E8] text-white rounded-md text-sm font-medium transition-colors shadow-sm shadow-[#5e6ad2]/20"
       >
         <Plus size={16} />
         New Issue
