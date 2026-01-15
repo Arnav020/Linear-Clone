@@ -14,6 +14,7 @@ export default function Dashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('project');
+  const searchQuery = searchParams.get('q');
   const { user, isLoading } = useUser();
 
   // Auth guard
@@ -33,11 +34,17 @@ export default function Dashboard() {
     const supabase = createClient();
     
     // Fetch issues for the project
-    const { data, error } = await supabase
+    let query = supabase
       .from('issues')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
+
+    if (searchQuery) {
+        query = query.ilike('title', `%${searchQuery}%`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching issues:', error);
@@ -77,7 +84,7 @@ export default function Dashboard() {
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, projectId]); // Relying on fetchIssues being stable-ish or ignoring it in deps to avoid loop if not using useCallback perfectly
+  }, [user, projectId, searchQuery]); // Re-fetch when searchQuery changes
 
   if (isLoading) {
     return (

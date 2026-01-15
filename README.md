@@ -2,7 +2,7 @@
 
 A high-fidelity clone of [Linear.app](https://linear.app/), built to replicate its premium UI/UX, speed, and core issue tracking functionalities. This project demonstrates sophisticated frontend engineering with Next.js 14, real-time data synchronization using Supabase, and AI-powered features.
 
-![Linear Clone Screenshot](https://raw.githubusercontent.com/Arnav020/Linear-Clone/main/public/og-image.png)
+![Linear Clone Screenshot](linear_clone.png)
 
 ## ✨ Key Features
 

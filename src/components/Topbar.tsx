@@ -3,11 +3,13 @@
 import { Search, ListFilter, SlidersHorizontal, Plus, Bell, ChevronDown } from 'lucide-react';
 import { useViewFilter } from '@/context/ViewFilterContext';
 import ProjectSelector from './ProjectSelector';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 const Topbar = () => {
   const { filter, setFilter } = useViewFilter();
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const isProjectsPage = pathname === '/projects';
   return (
     <header className="h-12 border-b border-[#2A2D35] flex items-center justify-between px-4 bg-[#0D0E11] text-[#E3E4E6] font-sans">
@@ -52,7 +54,18 @@ const Topbar = () => {
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#7C7F88] group-focus-within:text-[#E3E4E6]" size={14} />
                 <input 
                     type="text" 
-                    placeholder="Search issues..." 
+                    placeholder="Search issues..."
+                    defaultValue={searchParams.get('q') || ''}
+                    onChange={(e) => {
+                      const params = new URLSearchParams(searchParams);
+                      const value = e.target.value;
+                      if (value) {
+                        params.set('q', value);
+                      } else {
+                        params.delete('q');
+                      }
+                      router.replace(`${pathname}?${params.toString()}`);
+                    }} 
                     className="w-full bg-[#1C1E22] border border-[#2A2D35] focus:border-[#5E6AD2] rounded-md py-1.5 pl-8 pr-3 text-xs text-[#E3E4E6] placeholder-[#7C7F88]/60 focus:outline-none transition-all shadow-sm"
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-0.5">
