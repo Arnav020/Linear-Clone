@@ -14,9 +14,10 @@ import IssueDetailModal from './IssueDetailModal';
 
 interface IssueCardProps {
   issue: any;
+  onIssueUpdate?: () => void;
 }
 
-export default function IssueCard({ issue }: IssueCardProps) {
+export default function IssueCard({ issue, onIssueUpdate }: IssueCardProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -95,12 +96,12 @@ export default function IssueCard({ issue }: IssueCardProps) {
           <div className="flex items-center justify-between mt-1">
              <div className="flex items-center gap-2" onPointerDown={stopProp} onClick={e => e.stopPropagation()}>
                 <span className="text-[10px] font-mono text-[#7C7F88]">LIN-{issue.id.slice(0, 3).toUpperCase()}</span>
-                <StatusDropdown issueId={issue.id} currentStatus={issue.status} />
+                <StatusDropdown issueId={issue.id} currentStatus={issue.status} onUpdate={onIssueUpdate} />
              </div>
              
              <div className="flex items-center gap-2" onPointerDown={stopProp} onClick={e => e.stopPropagation()}>
                 <PriorityDropdown issueId={issue.id} currentPriority={issue.priority} />
-                <AssigneeDropdown issueId={issue.id} currentAssignee={issue.assignee_name} />
+                <AssigneeDropdown issueId={issue.id} currentAssignee={issue.assignee_name} projectId={issue.project_id} />
              </div>
           </div>
       </div>

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
 import { StatusIcon, getStatusColor } from './StatusIcon';
@@ -9,6 +11,7 @@ interface StatusDropdownProps {
   currentStatus: string;
   className?: string;
   onStatusChange?: (newStatus: string) => void;
+  onUpdate?: () => void;
 }
 
 const ALL_STATUSES = [
@@ -20,7 +23,7 @@ const ALL_STATUSES = [
     { label: 'Duplicate', value: 'Duplicate', shortcut: '6' },
 ];
 
-export default function StatusDropdown({ issueId, currentStatus, className = "", onStatusChange }: StatusDropdownProps) {
+export default function StatusDropdown({ issueId, currentStatus, className = "", onStatusChange, onUpdate }: StatusDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [status, setStatus] = useState(currentStatus);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -72,7 +75,8 @@ export default function StatusDropdown({ issueId, currentStatus, className = "",
         setStatus(oldStatus);
         if (onStatusChange) onStatusChange(oldStatus);
     } else {
-        router.refresh();
+        // router.refresh();
+        if (onUpdate) onUpdate();
     }
     setIsUpdating(false);
   };

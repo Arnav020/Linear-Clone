@@ -15,9 +15,10 @@ type Project = {
 interface NewIssueModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onIssueCreated?: () => void;
 }
 
-export default function NewIssueModal({ isOpen, onClose }: NewIssueModalProps) {
+export default function NewIssueModal({ isOpen, onClose, onIssueCreated }: NewIssueModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('Todo');
@@ -140,7 +141,8 @@ export default function NewIssueModal({ isOpen, onClose }: NewIssueModalProps) {
         alert('Failed to create issue');
       } else {
         onClose();
-        router.refresh();
+        if (onIssueCreated) onIssueCreated();
+        // router.refresh(); // Handled by realtime subscription now
       }
     } catch (err) {
       console.error('Unexpected error:', err);

@@ -6,6 +6,7 @@ import { analyzeIssueAction } from '@/app/actions/ai';
 
 interface IssueListItemProps {
   issue: any; 
+  onIssueUpdate?: () => void;
 }
 
 import StatusDropdown from './StatusDropdown';
@@ -23,7 +24,7 @@ import LabelDropdown from './LabelDropdown';
 
 import IssueDetailModal from './IssueDetailModal';
 
-export default function IssueListItem({ issue }: IssueListItemProps) {
+export default function IssueListItem({ issue, onIssueUpdate }: IssueListItemProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -80,7 +81,7 @@ export default function IssueListItem({ issue }: IssueListItemProps) {
 
         {/* Status */}
         <div className="shrink-0 flex items-center justify-center w-4 h-4">
-            <StatusDropdown issueId={issue.id} currentStatus={issue.status} />
+            <StatusDropdown issueId={issue.id} currentStatus={issue.status} onUpdate={onIssueUpdate} />
         </div>
 
         {/* Title & Labels */}

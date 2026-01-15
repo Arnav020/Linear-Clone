@@ -5,57 +5,25 @@ import { useState, useEffect } from 'react';
 import BoardColumn from './BoardColumn';
 import IssueCard from './IssueCard';
 import { createClient } from '@/lib/supabase';
-import { ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface BoardViewProps {
   issues: any[];
+  refreshIssues?: () => Promise<void>;
 }
 
-import { useRouter } from 'next/navigation';
-
-export default function BoardView({ issues }: BoardViewProps) {
+export default function BoardView({ issues, refreshIssues }: BoardViewProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeIssue, setActiveIssue] = useState<any | null>(null);
   const router = useRouter();
-
-  // Optimistic state usually handled by optimistic UI or just relying on parent re-render if fast enough. 
-  // For standard React, modifying prop-derived state is better.
-  // But here we might just trigger an update and let parent/Supabase refresh.
-  // Ideally, we lift state up or use optimistic hook. 
-  // For simplicity, we'll fire Supabase update and wait for real-time or revalidation.
-  // However, DnD feels laggy without instant update.
-  // Let's implement local optimistic state.
   
   const [localIssues, setLocalIssues] = useState(issues);
 
-  // Sync with props when they change (e.g. from server)
-  // But be careful not to overwrite optimistic updates immediately if server is slow.
-  // We'll trust props for now and implement local reorder.
-  if (localIssues !== issues) { // Simple reference check often fails, but assume parent passes fresh arrays.
-      // Actually, updating local state from props needs useEffect.
-  }
-  
-  // Actually, simpler: just use props issues, and update Supabase. 
-  // If we want optimistic, we need a way to mutate `issues` immediately.
-  // Since `issues` comes from a Server Component `page.tsx`, we can't easily mutate it without a refresh.
-  // So we use local state initialized from props.
-  useState(() => {
-      // Intentionally empty, relying on initial state.
-      // But we need to update if props change (e.g. new issue created).
-  });
-  
   // Sync state with props
   useEffect(() => {
      setLocalIssues(issues);
   }, [issues]);
 
-  // Better approach: Use local state derived from props, update it on drop, and sync.
-  // This is a common pattern.
-  
-  // Re-sync local issues when props change
-  // Note: This overrides local optimistic updates if server update arrives later.
-  // For this task, we will just use `localIssues` and update it.
-  
   // Sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -103,7 +71,9 @@ export default function BoardView({ issues }: BoardViewProps) {
             // Revert
             setLocalIssues(localIssues); 
         } else {
-            router.refresh(); // Sync with server
+            // Trigger manual refresh if callback provided
+            if (refreshIssues) refreshIssues();
+            // router.refresh(); // Sync with server backup
         }
     }
 
@@ -129,10 +99,10 @@ export default function BoardView({ issues }: BoardViewProps) {
         onDragEnd={handleDragEnd}
     >
         <div className="flex h-full gap-4 overflow-x-auto pb-4 pr-10">
-            <BoardColumn status="Backlog" issues={getIssuesByStatus('backlog')} count={getIssuesByStatus('backlog').length} />
-            <BoardColumn status="Todo" issues={getIssuesByStatus('todo')} count={getIssuesByStatus('todo').length} />
-            <BoardColumn status="In Progress" issues={getIssuesByStatus('in progress')} count={getIssuesByStatus('in progress').length} />
-            <BoardColumn status="Done" issues={getIssuesByStatus('done')} count={getIssuesByStatus('done').length} />
+            <BoardColumn status="Backlog" issues={getIssuesByStatus('backlog')} count={getIssuesByStatus('backlog').length} onIssueUpdate={refreshIssues} />
+            <BoardColumn status="Todo" issues={getIssuesByStatus('todo')} count={getIssuesByStatus('todo').length} onIssueUpdate={refreshIssues} />
+            <BoardColumn status="In Progress" issues={getIssuesByStatus('in progress')} count={getIssuesByStatus('in progress').length} onIssueUpdate={refreshIssues} />
+            <BoardColumn status="Done" issues={getIssuesByStatus('done')} count={getIssuesByStatus('done').length} onIssueUpdate={refreshIssues} />
             
             {/* Hidden Columns Panel */}
             <div className="border-l border-[#2A2D35] pl-4 flex flex-col gap-4 min-w-[280px]">

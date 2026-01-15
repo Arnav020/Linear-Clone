@@ -5,9 +5,10 @@ import IssueGroup from './IssueGroup';
 
 interface ListViewProps {
   issues: any[];
+  refreshIssues?: () => Promise<void>;
 }
 
-export default function ListView({ issues }: ListViewProps) {
+export default function ListView({ issues, refreshIssues }: ListViewProps) {
   const normalizeStatus = (status: string) => status?.toLowerCase().replace('_', ' ') || 'backlog';
 
   const backlogIssues = issues?.filter(i => normalizeStatus(i.status) === 'backlog') || [];
@@ -24,24 +25,28 @@ export default function ListView({ issues }: ListViewProps) {
             count={inProgressIssues.length}
             issues={inProgressIssues} 
             icon={<div className="w-3.5 h-3.5 rounded-full border-2 border-[#F59E0B] border-t-transparent -rotate-45" />} 
+            onIssueUpdate={refreshIssues}
         />
         <IssueGroup 
             title="Todo" 
             count={todoIssues.length}
             issues={todoIssues} 
             icon={<Circle size={14} className="text-[#6366F1]" />} 
+            onIssueUpdate={refreshIssues}
         />
         <IssueGroup 
             title="Backlog" 
             count={backlogIssues.length}
             issues={backlogIssues} 
             icon={<Circle size={14} className="text-[#78716C] border-dashed" />} 
+            onIssueUpdate={refreshIssues}
         />
         <IssueGroup 
             title="Done" 
             count={doneIssues.length}
             issues={doneIssues} 
             icon={<CheckCircle2 size={14} className="text-[#5E6AD2]" />} 
+            onIssueUpdate={refreshIssues}
         />
 
         {/* Hidden Issues Section */}
@@ -59,6 +64,7 @@ export default function ListView({ issues }: ListViewProps) {
                             count={canceledIssues.length}
                             issues={canceledIssues} 
                             icon={<div className="w-3.5 h-3.5 rounded-full bg-[#2A2D35] border border-[#7C7F88] flex items-center justify-center"><div className="w-1 h-1 rounded-full bg-[#7C7F88]"></div></div>} 
+                            onIssueUpdate={refreshIssues}
                         />
                     )}
                     {duplicateIssues.length > 0 && (
@@ -67,6 +73,7 @@ export default function ListView({ issues }: ListViewProps) {
                             count={duplicateIssues.length}
                             issues={duplicateIssues} 
                             icon={<div className="w-3.5 h-3.5 rounded-full bg-[#2A2D35] border border-[#7C7F88] flex items-center justify-center"><div className="w-1 h-1 rounded-full bg-[#7C7F88]"></div></div>} 
+                            onIssueUpdate={refreshIssues}
                         />
                     )}
                  </div>

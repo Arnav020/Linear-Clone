@@ -12,9 +12,10 @@ import BulkActionsMenu from './BulkActionsMenu';
 
 interface ProjectViewsProps {
   issues: any[];
+  refreshIssues: () => Promise<void>;
 }
 
-export default function ProjectViews({ issues }: ProjectViewsProps) {
+export default function ProjectViews({ issues, refreshIssues }: ProjectViewsProps) {
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function ProjectViews({ issues }: ProjectViewsProps) {
              
              {/* New Issue Button */}
              <div className="relative">
-                  <NewIssueTrigger /> 
+                  <NewIssueTrigger onIssueCreated={refreshIssues} /> 
              </div>
          </div>
       </div>
@@ -69,7 +70,7 @@ export default function ProjectViews({ issues }: ProjectViewsProps) {
       <div className="flex-1 overflow-hidden w-full px-6 pt-4 pb-0">
           {viewMode === 'list' ? (
               <div className="h-full overflow-y-auto pb-20">
-                   <ListView issues={filteredIssues} />
+                   <ListView issues={filteredIssues} refreshIssues={refreshIssues} />
               </div>
           ) : (
               <div className="h-full overflow-x-auto overflow-y-hidden">

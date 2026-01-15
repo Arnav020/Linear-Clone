@@ -76,11 +76,12 @@ export default function IssueDetailModal({ issue, isOpen, onClose }: IssueDetail
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 text-sans">
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200"
-        onClick={onClose}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
       />
 
       <div 
         ref={modalRef}
+        onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-4xl bg-[#1e2024] border border-[#2a2c30] rounded-xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
       >
         {/* Header */}
@@ -95,7 +96,7 @@ export default function IssueDetailModal({ issue, isOpen, onClose }: IssueDetail
             
             <div className="flex items-center gap-2">
                  <button 
-                    onClick={onClose} 
+                    onClick={(e) => { e.stopPropagation(); onClose(); }}
                     className="p-1.5 text-[#7C7F88] hover:text-[#E3E4E6] rounded hover:bg-[#2a2c30] transition-colors relative z-50 cursor-pointer"
                  >
                      <X size={18} />

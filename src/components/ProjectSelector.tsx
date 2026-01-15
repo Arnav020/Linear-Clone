@@ -64,7 +64,7 @@ export default function ProjectSelector() {
     setIsOpen(false);
     localStorage.setItem('selectedProjectId', project.id);
     // Navigate to dashboard with new project param
-    router.push(`/?project=${project.id}`);
+    router.push(`/dashboard?project=${project.id}`);
   };
 
   return (

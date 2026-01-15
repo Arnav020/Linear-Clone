@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import NewIssueModal from './NewIssueModal';
 
-export default function NewIssueTrigger() {
+interface NewIssueTriggerProps {
+  onIssueCreated?: () => void;
+}
+
+export default function NewIssueTrigger({ onIssueCreated }: NewIssueTriggerProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -41,6 +45,7 @@ export default function NewIssueTrigger() {
       <NewIssueModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
+        onIssueCreated={onIssueCreated}
       />
     </>
   );

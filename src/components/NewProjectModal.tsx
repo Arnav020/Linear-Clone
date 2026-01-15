@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
-import { X, Loader2, Folder, Keyboard } from 'lucide-react';
+import { X, Loader2, Folder, Keyboard, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 
@@ -20,6 +20,11 @@ export default function NewProjectModal({ isOpen, onClose, onProjectCreated }: N
   const [key, setKey] = useState('');
   const [color, setColor] = useState(COLORS[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
   const modalRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -32,6 +37,18 @@ export default function NewProjectModal({ isOpen, onClose, onProjectCreated }: N
       setTimeout(() => {
         nameInputRef.current?.focus();
       }, 100);
+
+      // Fetch users
+      const fetchUsers = async () => {
+          setLoadingUsers(true);
+          const { data, error } = await supabase.from('users').select('*');
+          if (data) {
+              setAvailableUsers(data);
+          }
+          setLoadingUsers(false);
+      };
+      fetchUsers();
+
     } else {
       document.body.style.overflow = 'unset';
       setTimeout(() => {
@@ -39,27 +56,23 @@ export default function NewProjectModal({ isOpen, onClose, onProjectCreated }: N
           setDescription('');
           setKey('');
           setColor(COLORS[0]);
+          setSelectedUsers(new Set());
       }, 200);
     }
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
-  // Auto-generate key from name
-  useEffect(() => {
-    if (!name) {
-        setKey('');
-        return;
-    }
-    // Simple logic: Take first 3 letters of words, upper case
-    const words = name.split(/\s+/).filter(w => w.length > 0);
-    let potentialKey = '';
-    if (words.length === 1) {
-        potentialKey = words[0].substring(0, 3).toUpperCase();
-    } else {
-        potentialKey = words.slice(0, 3).map(w => w[0]).join('').toUpperCase();
-    }
-    setKey(potentialKey);
-  }, [name]);
+  // ... auto-generate key useEffect ...
+
+  const toggleUser = (userId: string) => {
+      const next = new Set(selectedUsers);
+      if (next.has(userId)) {
+          next.delete(userId);
+      } else {
+          next.add(userId);
+      }
+      setSelectedUsers(next);
+  };
 
   const handleSubmit = async () => {
     if (!name.trim() || !key.trim() || !user) return;
@@ -85,15 +98,23 @@ export default function NewProjectModal({ isOpen, onClose, onProjectCreated }: N
 
       if (projectData) {
           // 2. Add creator as member (owner)
-          const { error: memberError } = await supabase.from('project_members').insert({
-              project_id: projectData.id,
-              user_id: user.id,
-              role: 'owner'
-          } as any);
+          const membersToInsert = [
+              { project_id: projectData.id, user_id: user.id, role: 'owner' }
+          ];
+
+          // 3. Add selected users
+          selectedUsers.forEach(userId => {
+              membersToInsert.push({
+                  project_id: projectData.id,
+                  user_id: userId,
+                  role: 'member'
+              });
+          });
+
+          const { error: memberError } = await supabase.from('project_members').insert(membersToInsert as any);
 
           if (memberError) {
-              // Rollback? ideally yes, but for now just log
-              console.error('Error adding member:', memberError);
+              console.error('Error adding members:', memberError);
           }
       }
 
@@ -187,6 +208,35 @@ export default function NewProjectModal({ isOpen, onClose, onProjectCreated }: N
                     placeholder="What is this project about?"
                     className="w-full bg-[#16181D] border border-[#2a2c30] rounded-md px-3 py-2 text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none focus:border-[#5E6AD2] min-h-[80px] resize-none"
                 />
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Members ({selectedUsers.size})</label>
+                <div className="bg-[#16181D] border border-[#2a2c30] rounded-md max-h-[150px] overflow-y-auto">
+                    {loadingUsers ? (
+                        <div className="flex items-center justify-center p-4 text-gray-500 text-xs">
+                            <Loader2 size={14} className="animate-spin mr-2" /> Loading users...
+                        </div>
+                    ) : availableUsers.filter(u => u.id !== user?.id).length === 0 ? (
+                        <div className="p-3 text-xs text-gray-500 text-center">No other users found.</div>
+                    ) : (
+                        availableUsers.filter(u => u.id !== user?.id).map(u => (
+                            <div 
+                                key={u.id}
+                                onClick={() => toggleUser(u.id)}
+                                className="flex items-center gap-3 px-3 py-2 hover:bg-[#2a2c30] cursor-pointer transition-colors border-b last:border-0 border-[#2a2c30]"
+                            >
+                                <div className={`w-4 h-4 border rounded flex items-center justify-center transition-colors ${selectedUsers.has(u.id) ? 'bg-[#5E6AD2] border-[#5E6AD2]' : 'border-gray-600 bg-transparent'}`}>
+                                    {selectedUsers.has(u.id) && <Check size={10} className="text-white" />}
+                                </div>
+                                <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[10px] text-white font-bold shrink-0">
+                                    {u.name?.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="text-sm text-gray-300 flex-1">{u.name}</span>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
         </div>
 

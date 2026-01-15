@@ -9,9 +9,10 @@ interface IssueGroupProps {
   issues: any[];
   count: number;
   icon: React.ReactNode;
+  onIssueUpdate?: () => void;
 }
 
-export default function IssueGroup({ title, issues, count, icon }: IssueGroupProps) {
+export default function IssueGroup({ title, issues, count, icon, onIssueUpdate }: IssueGroupProps) {
     // We can add collapse state here later if needed
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -40,7 +41,7 @@ export default function IssueGroup({ title, issues, count, icon }: IssueGroupPro
                             <span className="text-xs text-[#7C7F88]">No issues</span>
                         </div>
                      ) : (
-                        issues.map(i => <IssueListItem key={i.id} issue={i} />)
+                        issues.map(i => <IssueListItem key={i.id} issue={i} onIssueUpdate={onIssueUpdate} />)
                      )}
                 </div>
             )}

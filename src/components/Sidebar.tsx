@@ -82,16 +82,16 @@ const Sidebar = () => {
          <div className="flex flex-col gap-0.5">
             <SidebarItem icon={<PenSquare size={isCollapsed ? 18 : 16} />} label="New Issue" onClick={() => setIsNewIssueModalOpen(true)} collapsed={isCollapsed} active={isNewIssueModalOpen} />
             <div className="h-2"></div>
-            <SidebarItem icon={<Inbox size={isCollapsed ? 18 : 16} />} label="Inbox" href="/inbox" collapsed={isCollapsed} active={pathname === '/inbox'} />
-            <SidebarItem icon={<ListFilter size={isCollapsed ? 18 : 16} />} label="My Issues" href="/my-issues" collapsed={isCollapsed} active={pathname === '/my-issues'} />
+            <SidebarItem icon={<Inbox size={isCollapsed ? 18 : 16} />} label="Inbox" href="/dashboard/inbox" collapsed={isCollapsed} active={pathname === '/dashboard/inbox'} />
+            <SidebarItem icon={<ListFilter size={isCollapsed ? 18 : 16} />} label="My Issues" href="/dashboard/my-issues" collapsed={isCollapsed} active={pathname === '/dashboard/my-issues'} />
          </div>
 
          {/* Workspace Section */}
          <div className="flex flex-col gap-0.5">
             {!isCollapsed && <SectionHeader label="Workspace" />}
-            <SidebarItem icon={<Layers size={isCollapsed ? 18 : 16} />} label="Projects" href="/projects" collapsed={isCollapsed} active={pathname === '/projects'} />
-            <SidebarItem icon={<Layers size={isCollapsed ? 18 : 16} />} label="Views" href="/views" collapsed={isCollapsed} active={pathname === '/views'} />
-            <SidebarItem icon={<MoreHorizontal size={isCollapsed ? 18 : 16} />} label="More" href="/more" collapsed={isCollapsed} />
+            <SidebarItem icon={<Layers size={isCollapsed ? 18 : 16} />} label="Projects" href="/dashboard/projects" collapsed={isCollapsed} active={pathname === '/dashboard/projects'} />
+            <SidebarItem icon={<Layers size={isCollapsed ? 18 : 16} />} label="Views" href="/dashboard/views" collapsed={isCollapsed} active={pathname === '/dashboard/views'} />
+            <SidebarItem icon={<MoreHorizontal size={isCollapsed ? 18 : 16} />} label="More" href="/dashboard/more" collapsed={isCollapsed} />
          </div>
 
          {/* Active Project Section - Only show if projectId exists */}
@@ -115,7 +115,7 @@ const Sidebar = () => {
                     
                     {/* Project Sub-items */}
                     <div className={`${!isCollapsed ? 'pl-6' : ''} flex flex-col gap-0.5`}>
-                            <SidebarItem icon={<ListFilter size={16} />} label="Issues" href={`/?project=${projectId}`} active={pathname === '/' && searchParams.get('project') === projectId} collapsed={isCollapsed} />
+                            <SidebarItem icon={<ListFilter size={16} />} label="Issues" href={`/dashboard?project=${projectId}`} active={pathname === '/dashboard' && searchParams.get('project') === projectId} collapsed={isCollapsed} />
                     </div>
                 </div>
             </div>
@@ -124,8 +124,8 @@ const Sidebar = () => {
          {/* Try Section */}
          <div className="mt-auto flex flex-col gap-0.5 pt-4">
              {!isCollapsed && <div className="px-2 pb-2 text-xs font-semibold text-[#7C7F88]">Try</div>}
-             <SidebarItem icon={<Download size={isCollapsed ? 18 : 16} />} label="Import issues" href="/import" collapsed={isCollapsed} />
-             <SidebarItem icon={<Plus size={isCollapsed ? 18 : 16} />} label="Invite people" href="/invite" collapsed={isCollapsed} />
+             <SidebarItem icon={<Download size={isCollapsed ? 18 : 16} />} label="Import issues" href="/dashboard/import" collapsed={isCollapsed} />
+             <SidebarItem icon={<Plus size={isCollapsed ? 18 : 16} />} label="Invite people" href="/dashboard/invite" collapsed={isCollapsed} />
          </div>
       </div>
       

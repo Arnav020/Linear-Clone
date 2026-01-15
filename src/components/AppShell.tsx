@@ -4,9 +4,18 @@ import { useUser } from '@/context/UserContext';
 import Sidebar from '@/components/Sidebar';
 import Topbar from '@/components/Topbar';
 import { Loader2 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useUser();
+  const pathname = usePathname();
+
+  // Public routes that don't need the app shell
+  const isPublicRoute = pathname === '/' || pathname === '/login';
+
+  if (isPublicRoute) {
+      return <main className="h-screen w-full bg-[#0B0D10] overflow-y-auto custom-scrollbar">{children}</main>;
+  }
 
   // Show nothing or a sophisticated loader while checking auth state
   if (isLoading) {
@@ -17,8 +26,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If not logged in, render just the children (Login Page)
-  // The page.tsx logic will handle showing the login form
+  // If not logged in and trying to access protected route, render children (which will likely redirect)
+  // or we could redirect here. But pages usually handle it. 
+  // actually existing logic was: if !user return main children.
   if (!user) {
     return <main className="h-screen w-full bg-[#0B0D10]">{children}</main>;
   }

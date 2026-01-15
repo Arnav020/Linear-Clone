@@ -9,9 +9,10 @@ interface BoardColumnProps {
   status: string;
   issues: any[];
   count: number;
+  onIssueUpdate?: () => void;
 }
 
-export default function BoardColumn({ status, issues, count }: BoardColumnProps) {
+export default function BoardColumn({ status, issues, count, onIssueUpdate }: BoardColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: status,
   });
@@ -41,7 +42,7 @@ export default function BoardColumn({ status, issues, count }: BoardColumnProps)
         className={`flex-1 flex flex-col gap-2 p-1 rounded-lg transition-colors ${isOver ? 'bg-[#2A2D35]/30' : ''}`}
       >
          {issues.map(issue => (
-             <IssueCard key={issue.id} issue={issue} />
+             <IssueCard key={issue.id} issue={issue} onIssueUpdate={onIssueUpdate} />
          ))}
          {issues.length === 0 && (
             <div className="h-24 border border-dashed border-[#2A2D35] rounded-lg flex items-center justify-center">

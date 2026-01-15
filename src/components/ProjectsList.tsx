@@ -80,7 +80,7 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
         {projects?.map((project) => (
           <Link
             key={project.id}
-            href={`/?project=${project.id}`}
+            href={`/dashboard?project=${project.id}`}
             className="group p-5 bg-[#1C1E22] border border-[#2A2D35] rounded-lg hover:border-[#4B4E57] hover:bg-[#232529] transition-all duration-200 flex flex-col h-36 relative"
           >
             <div className="flex items-start justify-between mb-2">
