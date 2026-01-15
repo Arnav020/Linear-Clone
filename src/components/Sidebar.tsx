@@ -5,9 +5,12 @@ import { usePathname } from 'next/navigation';
 import { Inbox, Layers, MoreHorizontal, Plus, Github, Download, ChevronDown, ListFilter, PenSquare, Search, Bell, HelpCircle, User, ChevronLeft, ChevronRight, PanelLeft } from 'lucide-react';
 import React, { useState } from 'react';
 
+import NewIssueModal from './NewIssueModal';
+
 const Sidebar = () => {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isNewIssueModalOpen, setIsNewIssueModalOpen] = useState(false);
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
@@ -16,6 +19,7 @@ const Sidebar = () => {
     : "w-[240px] transition-[width] duration-300 ease-in-out";
 
   return (
+    <>
     <aside className={`${containerClass} h-screen bg-[#16181D] border-r border-[#2A2D35] flex flex-col items-center py-3 z-50 text-[13px] font-medium font-sans shrink-0`}>
       {/* Workspace Switcher / Header */}
       <div className={`w-full px-3 mb-2 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
@@ -39,10 +43,6 @@ const Sidebar = () => {
          )}
       </div>
       
-      {/* If collapsed, show toggle button in a different way or relies on top toggle. 
-          Actually usually there is a way to expand it back. 
-          I'll add a hover trigger or a specific button if collapsed. 
-      */}
       {isCollapsed && (
           <div className="mb-4 text-[#7C7F88] hover:text-[#E3E4E6] cursor-pointer" onClick={toggleSidebar}>
               <PanelLeft size={18} />
@@ -54,7 +54,7 @@ const Sidebar = () => {
          
          {/* Top Section */}
          <div className="flex flex-col gap-0.5">
-            <SidebarItem icon={<PenSquare size={isCollapsed ? 18 : 16} />} label="New Issue" href="/new" collapsed={isCollapsed} active={pathname === '/new'} />
+            <SidebarItem icon={<PenSquare size={isCollapsed ? 18 : 16} />} label="New Issue" onClick={() => setIsNewIssueModalOpen(true)} collapsed={isCollapsed} active={isNewIssueModalOpen} />
             <div className="h-2"></div>
             <SidebarItem icon={<Inbox size={isCollapsed ? 18 : 16} />} label="Inbox" href="/inbox" collapsed={isCollapsed} active={pathname === '/inbox'} />
             <SidebarItem icon={<ListFilter size={isCollapsed ? 18 : 16} />} label="My Issues" href="/my-issues" collapsed={isCollapsed} active={pathname === '/my-issues'} />
@@ -84,14 +84,12 @@ const Sidebar = () => {
                     {!isCollapsed && <span className="truncate flex-1">My Practise Demo</span>}
                 </div>
                 
-                {/* Team Sub-items (only visible if expanded usually, or simplified if collapsed) */}
-                {!isCollapsed && (
-                    <div className="pl-6 flex flex-col gap-0.5">
+                {/* Team Sub-items: Always Render, adjust spacing/indent if not collapsed */}
+                <div className={`${!isCollapsed ? 'pl-6' : ''} flex flex-col gap-0.5`}>
                         <SidebarItem icon={<ListFilter size={16} />} label="Issues" href="/" active={pathname === '/'} collapsed={isCollapsed} />
                         <SidebarItem icon={<Layers size={16} />} label="Projects" href="/team/demo/projects" collapsed={isCollapsed} />
                         <SidebarItem icon={<Layers size={16} />} label="Views" href="/team/demo/views" collapsed={isCollapsed} />
-                    </div>
-                )}
+                </div>
             </div>
          </div>
 
@@ -110,6 +108,9 @@ const Sidebar = () => {
            {!isCollapsed && <span>Help & Support</span>}
        </div>
     </aside>
+    
+    <NewIssueModal isOpen={isNewIssueModalOpen} onClose={() => setIsNewIssueModalOpen(false)} />
+    </>
   );
 };
 
@@ -120,35 +121,42 @@ const SectionHeader = ({ label }: { label: string }) => (
     </div>
 );
 
-const SidebarItem = ({ icon, label, href, active, collapsed }: { icon: React.ReactNode, label: string, href: string, active?: boolean, collapsed?: boolean }) => {
-  if (collapsed) {
+const SidebarItem = ({ icon, label, href, active, collapsed, onClick }: { icon: React.ReactNode, label: string, href?: string, active?: boolean, collapsed?: boolean, onClick?: () => void }) => {
+  const content = (
+      <>
+        <span className={active ? 'text-[#E3E4E6]' : 'text-[#7C7F88] group-hover:text-[#E3E4E6]'}>{icon}</span>
+        <span className="truncate">{label}</span>
+      </>
+  );
+
+  const collapsedContent = (
+      <>
+        <span className={active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}>
+            {icon}
+        </span>
+        {active && <div className="absolute left-[-6px] top-2 bottom-2 w-1 bg-[#5E6AD2] rounded-r-none rounded-l"></div>}
+      </>
+  );
+
+  const className = collapsed 
+    ? `relative w-10 h-10 flex items-center justify-center rounded-md transition-all duration-200 group shrink-0 ${active ? 'bg-white/10 text-[#E3E4E6]' : 'text-[#7C7F88] hover:bg-white/5 hover:text-[#E3E4E6]'}`
+    : `flex items-center gap-3 px-2 py-1.5 rounded-md transition-colors whitespace-nowrap overflow-hidden ${active ? 'bg-[#2A2D35]/80 text-[#E3E4E6]' : 'text-[#7C7F88] hover:bg-[#2A2D35]/50 hover:text-[#E3E4E6]'}`;
+
+  if (onClick) {
       return (
-        <Link 
-            href={href}
-            className={`
-                relative w-10 h-10 flex items-center justify-center rounded-md transition-all duration-200 group shrink-0
-                ${active ? 'bg-white/10 text-[#E3E4E6]' : 'text-[#7C7F88] hover:bg-white/5 hover:text-[#E3E4E6]'}
-            `}
-            title={label}
-        >
-            <span className={active ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}>
-                {icon}
-            </span>
-            {active && <div className="absolute left-[-6px] top-2 bottom-2 w-1 bg-[#5E6AD2] rounded-r-none rounded-l"></div>}
-        </Link>
+          <div onClick={onClick} className={`${className} cursor-pointer`} title={collapsed ? label : undefined}>
+              {collapsed ? collapsedContent : content}
+          </div>
       );
   }
 
   return (
     <Link 
-      href={href}
-      className={`
-        flex items-center gap-3 px-2 py-1.5 rounded-md transition-colors whitespace-nowrap overflow-hidden
-        ${active ? 'bg-[#2A2D35]/80 text-[#E3E4E6]' : 'text-[#7C7F88] hover:bg-[#2A2D35]/50 hover:text-[#E3E4E6]'}
-      `}
+      href={href || '#'}
+      className={className}
+      title={collapsed ? label : undefined}
     >
-      <span className={active ? 'text-[#E3E4E6]' : 'text-[#7C7F88] group-hover:text-[#E3E4E6]'}>{icon}</span>
-      <span className="truncate">{label}</span>
+      {collapsed ? collapsedContent : content}
     </Link>
   );
 };

@@ -71,9 +71,10 @@ export interface Database {
           description: string | null
           status: string
           priority: string
-          team_id: string
           project_id: string | null
           assignee_id: string | null
+          assignee_name: string | null
+          labels: string[] | null
         }
         Insert: {
           id?: string
@@ -85,6 +86,8 @@ export interface Database {
           team_id: string
           project_id?: string | null
           assignee_id?: string | null
+          assignee_name?: string | null
+          labels?: string[] | null
         }
         Update: {
           id?: string
@@ -96,6 +99,8 @@ export interface Database {
           team_id?: string
           project_id?: string | null
           assignee_id?: string | null
+          assignee_name?: string | null
+          labels?: string[] | null
         }
         Relationships: []
       }

@@ -8,10 +8,29 @@ interface IssueListItemProps {
   issue: any; 
 }
 
+import StatusDropdown from './StatusDropdown';
+
+// ... imports
+
+import IssueCheckbox from './IssueCheckbox';
+import { useIssueSelection } from '@/context/IssueSelectionContext';
+
+// ... imports
+
+import AssigneeDropdown from './AssigneeDropdown';
+import PriorityDropdown from './PriorityDropdown';
+import LabelDropdown from './LabelDropdown';
+
+import IssueDetailModal from './IssueDetailModal';
+
 export default function IssueListItem({ issue }: IssueListItemProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  
+  const { isSelectionMode, selectedIssueIds, toggleSelection } = useIssueSelection();
+  const isSelected = selectedIssueIds.has(issue.id);
 
   const handleAnalyze = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -27,56 +46,49 @@ export default function IssueListItem({ issue }: IssueListItemProps) {
     setIsAnalyzing(false);
   };
 
-  const StatusIcon = ({ status }: { status: string }) => {
-     const s = status.toLowerCase();
-     if (s === 'done') return <CheckCircle2 size={14} className="text-[#10B981]" />;
-     if (s === 'in progress') return <div className="w-3.5 h-3.5 rounded-full border-2 border-[#F59E0B] border-t-transparent -rotate-45" />;
-     if (s === 'todo') return <Circle size={14} className="text-[#6366F1]" />;
-     return <Circle size={14} className="text-[#78716C] border-dashed" />;
-  };
-
-  // Priority Icons (SVG signals)
-  const PriorityIcon = ({ priority }: { priority: string }) => {
-      switch(priority) {
-          case 'Urgent': // Exclamation + Box
-              return (
-                <div className="flex items-center justify-center border border-[#ef4444] rounded-[3px] w-3.5 h-3.5">
-                     <div className="w-[2px] h-[6px] bg-[#ef4444] rounded-full"></div>
-                </div>
-              );
-          case 'High': // 3 Bars
-              return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="8" width="2" height="4" rx="1" fill="#F97316"/><rect x="6" y="5" width="2" height="7" rx="1" fill="#F97316"/><rect x="10" y="2" width="2" height="10" rx="1" fill="#F97316"/></svg>;
-          case 'Medium': // 2 Bars
-              return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="8" width="2" height="4" rx="1" fill="#3F4149"/><rect x="6" y="5" width="2" height="7" rx="1" fill="#F59E0B"/><rect x="10" y="2" width="2" height="10" rx="1" fill="#F59E0B"/></svg>;
-          case 'Low': // 1 Bar
-              return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="8" width="2" height="4" rx="1" fill="#3F4149"/><rect x="6" y="5" width="2" height="7" rx="1" fill="#3F4149"/><rect x="10" y="2" width="2" height="10" rx="1" fill="#E3E4E6"/></svg>;
-          default: // None (Dashed)
-              return <div className="w-3.5 h-3.5 border border-dashed border-[#575a61] rounded-[3px]"></div>;
-      }
-  };
-
   const dateStr = new Date(issue.created_at || Date.now()).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 
   return (
-    <div className="relative group bg-[#1C1E22] hover:bg-[#232529] border border-transparent hover:border-[#2A2D35]/50 flex items-center gap-3 px-3 py-2 cursor-pointer transition-all duration-150 rounded-sm mb-[1px] shadow-sm hover:shadow-md hover:-translate-y-[1px]">
-        {/* Identifier */}
-        <div className="font-mono text-[#7C7F88] text-xs shrink-0 w-14">
-            LIN-{issue.id.slice(0,3).toUpperCase()}
+    <div 
+        onClick={(e) => {
+            if (isSelectionMode || e.metaKey || e.ctrlKey) {
+                e.preventDefault();
+                toggleSelection(issue.id);
+            } else {
+                setIsDetailOpen(true);
+            }
+        }}
+        style={{ zIndex: showAnalysis ? 50 : undefined }}
+        className={`relative group flex items-center gap-3 px-3 py-2 cursor-pointer transition-all duration-150 rounded-sm mb-[1px] shadow-sm hover:shadow-md hover:-translate-y-[1px] hover:z-50 focus-within:z-50
+            ${isSelected ? 'bg-blue-500/10 border-blue-500/50 z-2' : 'bg-[#1C1E22] hover:bg-[#232529] border-transparent hover:border-[#2A2D35]/50 z-1'}
+        `}
+    >
+        {/* Checkbox (Hover/Selected) */}
+        <div className={`absolute left-3 transition-opacity duration-200 ${isSelected || isSelectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+            <IssueCheckbox checked={isSelected} onChange={() => toggleSelection(issue.id)} />
         </div>
 
+        {/* Identifier */}
+        <div className={`font-mono text-[#7C7F88] text-xs shrink-0 w-14 transition-opacity duration-200 ${isSelected || isSelectionMode ? 'opacity-0' : 'opacity-100 group-hover:opacity-0'}`}>
+            LIN-{issue.id.slice(0,3).toUpperCase()}
+        </div>
+        
         {/* Priority */}
-        <div className="shrink-0 flex items-center justify-center w-4" title={`Priority: ${issue.priority}`}>
-            <PriorityIcon priority={issue.priority} />
+        <div className="shrink-0 flex items-center justify-center w-4">
+            <PriorityDropdown issueId={issue.id} currentPriority={issue.priority} />
         </div>
 
         {/* Status */}
-        <div className="shrink-0 flex items-center justify-center w-4">
-            <StatusIcon status={issue.status} />
+        <div className="shrink-0 flex items-center justify-center w-4 h-4">
+            <StatusDropdown issueId={issue.id} currentStatus={issue.status} />
         </div>
 
-        {/* Title */}
-        <div className="flex-1 text-[#E3E4E6] text-sm font-medium truncate leading-tight">
-            {issue.title}
+        {/* Title & Labels */}
+        <div className="flex-1 min-w-0 flex items-center gap-2 mr-2">
+            <span className="text-[#E3E4E6] text-sm font-medium truncate leading-tight">
+                {issue.title}
+            </span>
+            <LabelDropdown issueId={issue.id} currentLabels={issue.labels} />
         </div>
 
         {/* AI Action */}
@@ -90,13 +102,16 @@ export default function IssueListItem({ issue }: IssueListItemProps) {
             </button>
          </div>
 
-        {/* Assignee (Mock) */}
-        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300 border border-[#2A2D35] shrink-0"></div>
+        {/* Assignee */}
+        <div className="shrink-0">
+            <AssigneeDropdown issueId={issue.id} currentAssignee={issue.assignee_name} />
+        </div>
 
         {/* Date */}
         <div className="text-[#7C7F88] text-xs shrink-0 w-16 text-right">
             {dateStr}
         </div>
+
 
       {/* Analysis Popover */}
       {showAnalysis && (
@@ -122,6 +137,13 @@ export default function IssueListItem({ issue }: IssueListItemProps) {
            )}
         </div>
       )}
+
+      {/* Detail Modal */}
+      <IssueDetailModal 
+        issue={issue}
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+      />
     </div>
   );
 }
