@@ -6,16 +6,21 @@ import { analyzeIssueAction } from '@/app/actions/ai';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
+import StatusDropdown from './StatusDropdown';
+import PriorityDropdown from './PriorityDropdown';
+import AssigneeDropdown from './AssigneeDropdown';
+import LabelDropdown from './LabelDropdown';
+import IssueDetailModal from './IssueDetailModal';
+
 interface IssueCardProps {
   issue: any;
 }
-
-import { PriorityIcon } from './PriorityIcon';
 
 export default function IssueCard({ issue }: IssueCardProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Drag and Drop hook
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -53,46 +58,49 @@ export default function IssueCard({ issue }: IssueCardProps) {
       }
   };
 
+  const stopProp = (e: React.PointerEvent) => {
+    e.stopPropagation();
+  };
+
   return (
+    <>
     <div 
         ref={setNodeRef} 
         style={style} 
         {...listeners} 
         {...attributes}
-        className={`relative group bg-[#1C1E22] hover:bg-[#232529] border border-[#2A2D35] hover:border-[#3a3d42] rounded-md p-3 shadow-sm transition-all duration-200 cursor-grab active:cursor-grabbing select-none overflow-hidden hover:z-50 focus-within:z-50 ${isDragging ? 'z-50' : 'z-1'}`}
+        onClick={() => setIsDetailOpen(true)}
+        className={`relative group bg-[#1C1E22] hover:bg-[#232529] border border-[#2A2D35] hover:border-[#3a3d42] rounded-md p-3 shadow-sm transition-all duration-200 cursor-grab active:cursor-grabbing select-none hover:z-50 focus-within:z-50 ${isDragging ? 'z-50' : 'z-1'}`}
     >
       {/* Colored Priority Bar on Left */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${getPriorityColor(issue.priority)}`} />
+      <div className={`absolute left-0 top-1 bottom-1 w-0.5 rounded-full ${getPriorityColor(issue.priority)}`} />
 
       <div className="pl-2 flex flex-col gap-2">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-sm font-medium text-[#E3E4E6] leading-snug line-clamp-3">{issue.title}</span>
+            <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium text-[#E3E4E6] leading-snug line-clamp-3 block mb-1">{issue.title}</span>
+                <div onPointerDown={stopProp} onClick={e => e.stopPropagation()}>
+                    <LabelDropdown issueId={issue.id} currentLabels={issue.labels} />
+                </div>
+            </div>
             <button 
               onClick={handleAnalyze}
               className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-[#5E6AD2]/20 text-[#7C7F88] hover:text-[#5E6AD2] shrink-0 ${showAnalysis ? 'opacity-100 text-[#5e6ad2]' : ''}`}
-              onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on button click
+              onPointerDown={stopProp} // Prevent drag start on button click
             >
               <Sparkles size={14} />
             </button>
           </div>
           
           <div className="flex items-center justify-between mt-1">
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2" onPointerDown={stopProp} onClick={e => e.stopPropagation()}>
                 <span className="text-[10px] font-mono text-[#7C7F88]">LIN-{issue.id.slice(0, 3).toUpperCase()}</span>
+                <StatusDropdown issueId={issue.id} currentStatus={issue.status} />
              </div>
-             <div className="flex items-center gap-2">
-                <div title={`Priority: ${issue.priority}`}>
-                  <PriorityIcon priority={issue.priority} />
-                </div>
-                {/* Assignee Avatar */}
-                {issue.assignee_name ? (
-                    <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-[8px] text-white font-bold border border-[#2A2D35]" title={issue.assignee_name}>
-                        {issue.assignee_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
-                    </div>
-                ) : (
-                    <div className="w-4 h-4 rounded-full bg-[#2A2D35] border border-[#3a3d42] flex items-center justify-center">
-                    </div>
-                )}
+             
+             <div className="flex items-center gap-2" onPointerDown={stopProp} onClick={e => e.stopPropagation()}>
+                <PriorityDropdown issueId={issue.id} currentPriority={issue.priority} />
+                <AssigneeDropdown issueId={issue.id} currentAssignee={issue.assignee_name} />
              </div>
           </div>
       </div>
@@ -100,8 +108,9 @@ export default function IssueCard({ issue }: IssueCardProps) {
       {/* Analysis Popover */}
       {showAnalysis && (
         <div 
-            className="absolute top-full left-0 right-0 z-20 mt-1 bg-[#16181D] border border-[#2A2D35] shadow-xl rounded-lg p-3 text-xs animate-in fade-in zoom-in-95 duration-200 cursor-default"
-            onPointerDown={(e) => e.stopPropagation()} // Prevent drag when interacting with popover
+            className="absolute top-full left-0 right-0 z-[60] mt-1 bg-[#16181D] border border-[#2A2D35] shadow-xl rounded-lg p-3 text-xs animate-in fade-in zoom-in-95 duration-200 cursor-default"
+            onPointerDown={stopProp}
+            onClick={e => e.stopPropagation()}
         >
           <div className="flex justify-between items-center mb-2 pb-2 border-b border-[#2A2D35]">
              <span className="font-semibold text-[#8B5CF6] flex items-center gap-1">
@@ -143,5 +152,12 @@ export default function IssueCard({ issue }: IssueCardProps) {
         </div>
       )}
     </div>
+    
+    <IssueDetailModal 
+        issue={issue}
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+    />
+    </>
   );
 }

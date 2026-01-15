@@ -112,13 +112,15 @@ export default function BoardView({ issues }: BoardViewProps) {
   };
 
   // Group issues by status
+  const normalizeStatus = (status: string) => status?.toLowerCase().replace('_', ' ').replace('-', ' ').trim() || 'backlog';
+
   const getIssuesByStatus = (status: string) => {
-      const normalized = status.toLowerCase();
-      // Need to handle "In Progress" vs "in progress" matching carefully
-      // Supabase is likely case sensitive or consistent. 
-      // The issue data usually uses Title Case or user input.
-      return localIssues.filter(i => (i.status || 'Backlog').toLowerCase() === normalized);
+      const target = normalizeStatus(status);
+      return localIssues.filter(i => normalizeStatus(i.status) === target);
   };
+
+  const canceled = getIssuesByStatus('canceled');
+  const duplicate = getIssuesByStatus('duplicate');
 
   return (
     <DndContext 
@@ -132,22 +134,37 @@ export default function BoardView({ issues }: BoardViewProps) {
             <BoardColumn status="In Progress" issues={getIssuesByStatus('in progress')} count={getIssuesByStatus('in progress').length} />
             <BoardColumn status="Done" issues={getIssuesByStatus('done')} count={getIssuesByStatus('done').length} />
             
-            {/* Hidden Columns Panel (Simplified) */}
-            <div className="border-l border-[#2A2D35] pl-4 flex flex-col gap-4 min-w-[200px]">
-                <div className="flex items-center gap-2 text-[#7C7F88] text-xs font-medium mb-2">
-                    <span>Hidden</span>
-                    <span className="bg-[#2A2D35] px-1.5 rounded text-[10px]">{getIssuesByStatus('canceled').length + getIssuesByStatus('duplicate').length}</span>
+            {/* Hidden Columns Panel */}
+            <div className="border-l border-[#2A2D35] pl-4 flex flex-col gap-4 min-w-[280px]">
+                <div className="flex items-center gap-2 text-[#7C7F88] text-xs font-medium mb-2 uppercase tracking-wider">
+                    Hidden Issues
                 </div>
-                <div className="opacity-50 hover:opacity-100 transition-opacity">
-                     <div className="flex items-center gap-2 mb-2 p-2 rounded hover:bg-[#2A2D35] cursor-pointer">
-                         <div className="w-2 h-2 rounded-full border border-[#7C7F88]"></div>
-                         <span className="text-xs text-[#7C7F88]">Canceled</span>
-                         <span className="text-xs text-[#575a61] ml-auto">{getIssuesByStatus('canceled').length}</span>
+                
+                {/* Canceled */}
+                <div className="flex flex-col gap-2">
+                     <div className="flex items-center gap-2 text-[#7C7F88] text-xs font-medium bg-[#1C1E22] p-1.5 rounded border border-[#2A2D35]">
+                         <span className="w-1.5 h-1.5 rounded-full border border-[#7C7F88]"></span>
+                         <span>Canceled</span>
+                         <span className="ml-auto text-[#575a61]">{canceled.length}</span>
                      </div>
-                     <div className="flex items-center gap-2 p-2 rounded hover:bg-[#2A2D35] cursor-pointer">
-                         <div className="w-2 h-2 rounded-full border border-[#7C7F88]"></div>
-                         <span className="text-xs text-[#7C7F88]">Duplicate</span>
-                         <span className="text-xs text-[#575a61] ml-auto">{getIssuesByStatus('duplicate').length}</span>
+                     <div className="flex flex-col gap-2">
+                        {canceled.map(issue => (
+                            <IssueCard key={issue.id} issue={issue} />
+                        ))}
+                     </div>
+                </div>
+
+                 {/* Duplicate */}
+                <div className="flex flex-col gap-2">
+                     <div className="flex items-center gap-2 text-[#7C7F88] text-xs font-medium bg-[#1C1E22] p-1.5 rounded border border-[#2A2D35]">
+                         <span className="w-1.5 h-1.5 rounded-full border border-[#7C7F88]"></span>
+                         <span>Duplicate</span>
+                         <span className="ml-auto text-[#575a61]">{duplicate.length}</span>
+                     </div>
+                     <div className="flex flex-col gap-2">
+                        {duplicate.map(issue => (
+                            <IssueCard key={issue.id} issue={issue} />
+                        ))}
                      </div>
                 </div>
             </div>
