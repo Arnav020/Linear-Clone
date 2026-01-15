@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
+import Link from 'next/link';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -79,6 +80,12 @@ export default function Login() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#0B0D10] text-[#E3E4E6] p-4 relative overflow-hidden">
+        {/* Back to Home */}
+        <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-[#878A94] hover:text-[#E3E4E6] transition-colors z-20">
+            <ArrowLeft size={16} />
+            <span className="text-sm font-medium">Back to Home</span>
+        </Link>
+        
         {/* Decorative Grid */}
         <div className="absolute inset-0 bg-[url('https://linear.app/cdn-cgi/imagedelivery/fO02fVwohEs9s9UHFZJErA/d0d34e6e-2d4e-4f73-2051-404675545500/width=1000')] opacity-20 pointer-events-none" style={{ backgroundSize: '800px' }}></div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D10] via-transparent to-[#0B0D10] pointer-events-none"></div>
@@ -132,7 +139,10 @@ export default function Login() {
                  </form>
             </div>
             
-            <p className="text-center text-[#575a61] text-xs mt-8">
+            <p className="text-center text-[#878A94] text-sm mt-8">
+                Don't have an account? <Link href="/signup" className="text-[#5E6AD2] hover:underline">Sign up</Link>
+            </p>
+            <p className="text-center text-[#575a61] text-xs mt-2">
                 Powered by Supabase & Next.js
             </p>
         </div>
