@@ -94,7 +94,10 @@ export default function IssueDetailModal({ issue, isOpen, onClose }: IssueDetail
             </div>
             
             <div className="flex items-center gap-2">
-                 <button onClick={onClose} className="p-1.5 text-[#7C7F88] hover:text-[#E3E4E6] rounded hover:bg-[#2a2c30] transition-colors">
+                 <button 
+                    onClick={onClose} 
+                    className="p-1.5 text-[#7C7F88] hover:text-[#E3E4E6] rounded hover:bg-[#2a2c30] transition-colors relative z-50 cursor-pointer"
+                 >
                      <X size={18} />
                  </button>
             </div>

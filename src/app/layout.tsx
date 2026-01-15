@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: "A Linear style issue tracker",
 };
 
+import { ViewFilterProvider } from "@/context/ViewFilterContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,15 +31,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--background)] text-[var(--foreground)] overflow-hidden`}
       >
-        <div className="flex h-screen w-full">
-          <Sidebar />
-          <div className="flex flex-col flex-1 h-full min-w-0">
-            <Topbar />
-            <main className="flex-1 overflow-auto">
-              {children}
-            </main>
-          </div>
-        </div>
+        <ViewFilterProvider>
+            <div className="flex h-screen w-full">
+            <Sidebar />
+            <div className="flex flex-col flex-1 h-full min-w-0">
+                <Topbar />
+                <main className="flex-1 overflow-auto">
+                {children}
+                </main>
+            </div>
+            </div>
+        </ViewFilterProvider>
       </body>
     </html>
   );

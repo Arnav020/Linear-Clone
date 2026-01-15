@@ -1,6 +1,10 @@
+'use client';
+
 import { Search, ListFilter, SlidersHorizontal, Plus, Bell, ChevronDown } from 'lucide-react';
+import { useViewFilter } from '@/context/ViewFilterContext';
 
 const Topbar = () => {
+  const { filter, setFilter } = useViewFilter();
   return (
     <header className="h-12 border-b border-[#2A2D35] flex items-center justify-between px-4 bg-[#0D0E11] text-[#E3E4E6] font-sans">
       <div className="flex items-center gap-3">
@@ -15,16 +19,25 @@ const Topbar = () => {
 
          {/* View Tabs - Refined */}
          <div className="flex items-center gap-1">
-             <div className="px-2 py-1 bg-[#2A2D35] text-[#E3E4E6] rounded flex items-center gap-1.5 text-xs font-medium cursor-default">
-                <ListFilter size={13} className="opacity-70" />
+             <button 
+                onClick={() => setFilter('all')}
+                className={`px-2 py-1 rounded flex items-center gap-1.5 text-xs font-medium transition-colors ${filter === 'all' ? 'bg-[#2A2D35] text-[#E3E4E6]' : 'text-[#7C7F88] hover:text-[#E3E4E6] hover:bg-white/5'}`}
+             >
+                <ListFilter size={13} className={filter === 'all' ? "opacity-100" : "opacity-70"} />
                 <span>All issues</span>
-             </div>
-             <div className="px-2 py-1 text-[#7C7F88] hover:text-[#E3E4E6] hover:bg-white/5 rounded flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors">
+             </button>
+             <button 
+                onClick={() => setFilter('active')}
+                className={`px-2 py-1 rounded flex items-center gap-1.5 text-xs font-medium transition-colors ${filter === 'active' ? 'bg-[#2A2D35] text-[#E3E4E6]' : 'text-[#7C7F88] hover:text-[#E3E4E6] hover:bg-white/5'}`}
+             >
                  <span>Active</span>
-             </div>
-             <div className="px-2 py-1 text-[#7C7F88] hover:text-[#E3E4E6] hover:bg-white/5 rounded flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors">
+             </button>
+             <button 
+                onClick={() => setFilter('backlog')}
+                className={`px-2 py-1 rounded flex items-center gap-1.5 text-xs font-medium transition-colors ${filter === 'backlog' ? 'bg-[#2A2D35] text-[#E3E4E6]' : 'text-[#7C7F88] hover:text-[#E3E4E6] hover:bg-white/5'}`}
+             >
                  <span>Backlog</span>
-             </div>
+             </button>
          </div>
       </div>
 
