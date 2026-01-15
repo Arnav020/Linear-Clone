@@ -45,9 +45,13 @@ export default function NewIssueModal({ isOpen, onClose }: NewIssueModalProps) {
             setTeamId(teams[0].id);
         }
 
-        const { data: projectsData } = await supabase.from('projects').select('id, name');
+        const { data: projectsData } = await supabase.from('projects').select('id, name').order('name');
         if (projectsData) {
             setProjects(projectsData);
+            const savedProjectId = localStorage.getItem('selectedProjectId');
+            // Default to saved project, or first available
+            const defaultProjectId = savedProjectId && projectsData.find(p => p.id === savedProjectId) ? savedProjectId : projectsData[0]?.id;
+            setProjectId(defaultProjectId || null);
         }
       };
       fetchData();

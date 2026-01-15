@@ -2,6 +2,7 @@ import { createClient, Database } from '@/lib/supabase';
 import { IssueSelectionProvider } from '@/context/IssueSelectionContext';
 import BulkActionsMenu from '@/components/BulkActionsMenu';
 import ProjectViews from '@/components/ProjectViews';
+import { redirect } from 'next/navigation';
 
 // Type definition
 type Issue = Database['public']['Tables']['issues']['Row'];
@@ -9,10 +10,26 @@ type Issue = Database['public']['Tables']['issues']['Row'];
 // Force dynamic rendering since we are fetching data
 export const dynamic = 'force-dynamic';
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ project?: string }> }) {
   const supabase = createClient();
-  const { data } = await supabase.from('issues').select('*').order('created_at', { ascending: false });
-  const issues = data as Issue[] | null;
+  const params = await searchParams;
+  const projectId = params.project;
+
+  // If no project is selected, redirect to the projects list
+  if (!projectId) {
+    redirect('/projects');
+  }
+
+  let query = supabase
+    .from('issues')
+    .select('*, projects(name)')
+    .order('created_at', { ascending: false });
+
+  if (projectId) {
+    query = query.eq('project_id', projectId);
+  }
+
+  const { data: issues } = await query;
 
   return (
     <IssueSelectionProvider>

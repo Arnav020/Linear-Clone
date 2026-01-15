@@ -2,19 +2,17 @@
 
 import { Search, ListFilter, SlidersHorizontal, Plus, Bell, ChevronDown } from 'lucide-react';
 import { useViewFilter } from '@/context/ViewFilterContext';
+import ProjectSelector from './ProjectSelector';
 
 const Topbar = () => {
   const { filter, setFilter } = useViewFilter();
   return (
     <header className="h-12 border-b border-[#2A2D35] flex items-center justify-between px-4 bg-[#0D0E11] text-[#E3E4E6] font-sans">
       <div className="flex items-center gap-3">
-         {/* Team Selector */}
-         <div className="flex items-center gap-2 px-2 py-1 rounded hover:bg-[#2A2D35] cursor-pointer transition-colors group">
-             <div className="w-4 h-4 bg-[#5E6AD2] rounded-[3px] flex items-center justify-center text-[10px] text-white font-bold">L</div>
-             <span className="text-sm font-medium text-[#E3E4E6]">Linear Clone</span>
-             <ChevronDown size={12} className="text-[#7C7F88] group-hover:text-[#E3E4E6]" />
-         </div>
-         
+         <ProjectSelector />
+         <button className="p-1 text-[#7C7F88] hover:text-[#E3E4E6] rounded hover:bg-white/5 transition-colors">
+            <SlidersHorizontal size={16} />
+         </button>
          <div className="h-4 w-[1px] bg-[#2A2D35]"></div>
 
          {/* View Tabs - Refined */}
