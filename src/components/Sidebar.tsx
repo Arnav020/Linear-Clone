@@ -1,18 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Inbox, Layers, MoreHorizontal, Plus, Github, Download, ChevronDown, ListFilter, PenSquare, Search, Bell, HelpCircle, User, ChevronLeft, ChevronRight, PanelLeft } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase';
 
 import NewIssueModal from './NewIssueModal';
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
+  
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNewIssueModalOpen, setIsNewIssueModalOpen] = useState(false);
+  const [projectName, setProjectName] = useState('');
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+
+  useEffect(() => {
+    const fetchProject = async () => {
+        if (projectId) {
+            const supabase = createClient();
+            const { data } = await supabase.from('projects').select('name').eq('id', projectId).single();
+            if (data) setProjectName(data.name);
+        } else {
+            setProjectName('');
+        }
+    };
+    fetchProject();
+  }, [projectId]);
 
   const containerClass = isCollapsed 
     ? "w-[64px] transition-[width] duration-300 ease-in-out" 
@@ -25,13 +43,15 @@ const Sidebar = () => {
       <div className={`w-full px-3 mb-2 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
          {isCollapsed ? (
              <div className="w-8 h-8 rounded-md bg-orange-500 flex items-center justify-center text-white font-bold text-xs cursor-pointer hover:opacity-90 transition-opacity">
-                M
+                {projectName ? projectName[0] : 'M'}
              </div>
          ) : (
             <>
              <div className="flex items-center gap-2 text-[#E3E4E6] p-1 hover:bg-white/5 rounded cursor-pointer transition-colors max-w-[160px]">
-                <div className="w-4 h-4 bg-orange-500 rounded flex items-center justify-center text-[10px] text-white font-bold shrink-0">M</div>
-                <span className="truncate">My Practise ...</span>
+                <div className="w-4 h-4 bg-orange-500 rounded flex items-center justify-center text-[10px] text-white font-bold shrink-0">
+                    {projectName ? projectName[0] : 'M'}
+                </div>
+                <span className="truncate">{projectName || 'My Practise ...'}</span>
                 <ChevronDown size={14} className="text-[#7C7F88]" />
              </div>
              <PanelLeft 
@@ -68,30 +88,34 @@ const Sidebar = () => {
             <SidebarItem icon={<MoreHorizontal size={isCollapsed ? 18 : 16} />} label="More" href="/more" collapsed={isCollapsed} />
          </div>
 
-         {/* Your Teams Section */}
-         <div className="flex flex-col gap-0.5">
-            {!isCollapsed && (
-                <div className="mb-1 px-2 py-1 flex items-center justify-between text-[#7C7F88] hover:text-[#E3E4E6] cursor-pointer group">
-                   <span className="text-xs font-semibold">Your teams</span>
-                   <Plus size={12} className="opacity-0 group-hover:opacity-100" />
-                </div>
-            )}
-            
-            {/* Team Item */}
-            <div className={`flex flex-col gap-0.5 ${isCollapsed ? 'items-center' : ''}`}>
-                <div className={`flex items-center gap-2 ${isCollapsed ? 'justify-center w-10 h-10' : 'px-2 py-1.5'} text-[#E3E4E6] hover:bg-white/5 rounded cursor-pointer`}>
-                    <div className="w-3 h-3 bg-red-500 rounded-[3px] text-white flex items-center justify-center text-[8px] shrink-0"></div>
-                    {!isCollapsed && <span className="truncate flex-1">My Practise Demo</span>}
-                </div>
+         {/* Active Project Section - Only show if projectId exists */}
+         {projectId && (
+            <div className="flex flex-col gap-0.5">
+                {!isCollapsed && (
+                    <div className="mb-1 px-2 py-1 flex items-center justify-between text-[#7C7F88] hover:text-[#E3E4E6] cursor-pointer group">
+                    <span className="text-xs font-semibold">Project</span>
+                    <Plus size={12} className="opacity-0 group-hover:opacity-100" />
+                    </div>
+                )}
                 
-                {/* Team Sub-items: Always Render, adjust spacing/indent if not collapsed */}
-                <div className={`${!isCollapsed ? 'pl-6' : ''} flex flex-col gap-0.5`}>
-                        <SidebarItem icon={<ListFilter size={16} />} label="Issues" href="/" active={pathname === '/'} collapsed={isCollapsed} />
-                        <SidebarItem icon={<Layers size={16} />} label="Projects" href="/team/demo/projects" collapsed={isCollapsed} />
-                        <SidebarItem icon={<Layers size={16} />} label="Views" href="/team/demo/views" collapsed={isCollapsed} />
+                {/* Project Item */}
+                <div className={`flex flex-col gap-0.5 ${isCollapsed ? 'items-center' : ''}`}>
+                    <div className={`flex items-center gap-2 ${isCollapsed ? 'justify-center w-10 h-10' : 'px-2 py-1.5'} text-[#E3E4E6] hover:bg-white/5 rounded cursor-pointer`}>
+                        <div className="w-3 h-3 bg-red-500 rounded-[3px] text-white flex items-center justify-center text-[8px] shrink-0">
+                            {projectName ? projectName[0] : 'P'}
+                        </div>
+                        {!isCollapsed && <span className="truncate flex-1">{projectName || 'Project'}</span>}
+                    </div>
+                    
+                    {/* Project Sub-items */}
+                    <div className={`${!isCollapsed ? 'pl-6' : ''} flex flex-col gap-0.5`}>
+                            <SidebarItem icon={<ListFilter size={16} />} label="Issues" href={`/?project=${projectId}`} active={pathname === '/' && searchParams.get('project') === projectId} collapsed={isCollapsed} />
+                            <SidebarItem icon={<Layers size={16} />} label="Cycles" href="#" collapsed={isCollapsed} />
+                            <SidebarItem icon={<Layers size={16} />} label="Modules" href="#" collapsed={isCollapsed} />
+                    </div>
                 </div>
             </div>
-         </div>
+         )}
 
          {/* Try Section */}
          <div className="mt-auto flex flex-col gap-0.5 pt-4">
