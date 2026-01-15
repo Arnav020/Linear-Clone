@@ -29,7 +29,7 @@ export default function LandingPage() {
 
         <div className="flex items-center gap-4 text-sm font-medium">
             <Link href="/login" className="text-[#E3E4E6] hover:text-white transition-colors">Log in</Link>
-            <Link href="/login" className="bg-[#E3E4E6] text-black px-4 py-1.5 rounded-full hover:bg-white transition-colors font-semibold">Sign up</Link>
+            <Link href="/signup" className="bg-[#E3E4E6] text-black px-4 py-1.5 rounded-full hover:bg-white transition-colors font-semibold">Sign up</Link>
         </div>
       </nav>
 
