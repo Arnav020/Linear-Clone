@@ -105,7 +105,7 @@ export default function StatusDropdown({ issueId, currentStatus, className = "",
 
       {isOpen && (
         <div 
-            className="absolute top-6 left-0 z-50 w-[180px] bg-[#1C1E22] border border-[#2A2D35] rounded-lg shadow-xl py-1 animate-in fade-in zoom-in-95 duration-100"
+            className="absolute top-6 left-0 z-[60] w-[180px] bg-[#1C1E22] border border-[#2A2D35] rounded-lg shadow-xl py-1 animate-in fade-in zoom-in-95 duration-100"
             onKeyDown={handleKeyDown}
             tabIndex={0} // Make focusable for keyboard events to bubble here
             autoFocus // Auto focus when opened

@@ -5,6 +5,8 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { useUser } from '@/context/UserContext';
+
 interface Project {
   id: string;
   name: string;
@@ -16,36 +18,46 @@ export default function ProjectSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchProjects = async () => {
+      if (!user) return;
+      
       const supabase = createClient();
-      const { data } = await supabase.from('projects').select('*').order('name');
+      // Fetch projects where the user is a member
+      const { data } = await supabase
+        .from('project_members')
+        .select(`
+          project_id,
+          projects (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', user.id);
       
       if (data && data.length > 0) {
-          setProjects(data);
+          const formattedProjects = data.map((item: any) => ({
+              id: item.projects.id,
+              name: item.projects.name
+          })).sort((a, b) => a.name.localeCompare(b.name));
+
+          setProjects(formattedProjects);
           
           // Determine selected project: URL > localStorage > first project
           const paramProjectId = searchParams.get('project');
           const savedProjectId = localStorage.getItem('selectedProjectId');
           
-          const initialProject = data.find(p => p.id === paramProjectId) || 
-                                 data.find(p => p.id === savedProjectId) || 
-                                 data[0];
+          const initialProject = formattedProjects.find(p => p.id === paramProjectId) || 
+                                 formattedProjects.find(p => p.id === savedProjectId) || 
+                                 formattedProjects[0];
                                  
           setSelectedProject(initialProject);
-          if (!paramProjectId && initialProject) {
-             // Optional: Update URL to reflect default selection if not present
-             // router.replace(`/?project=${initialProject.id}`); 
-             // But maybe user wants "All"? User requirements say "Filter issues by project".
-             // If URL has no project, maybe we show all? Or defaults to one?
-             // Linear usually drives view by team/project.
-             // Let's stick to user request: "Store selected project ID in localStorage"
-          }
       }
     };
     fetchProjects();
-  }, [searchParams]);
+  }, [searchParams, user]);
 
   const handleProjectChange = (project: Project) => {
     setSelectedProject(project);

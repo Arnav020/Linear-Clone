@@ -104,7 +104,7 @@ export default function IssueListItem({ issue }: IssueListItemProps) {
 
         {/* Assignee */}
         <div className="shrink-0">
-            <AssigneeDropdown issueId={issue.id} currentAssignee={issue.assignee_name} />
+            <AssigneeDropdown issueId={issue.id} currentAssignee={issue.assignee_name} projectId={issue.project_id} />
         </div>
 
         {/* Date */}

@@ -9,22 +9,54 @@ interface AssigneeDropdownProps {
   issueId: string;
   currentAssignee?: string | null;
   className?: string;
+  projectId?: string;
 }
 
-const MOCK_USERS = [
-    { name: 'Arnav Joshi', id: 'arnav-joshi', color: 'bg-blue-500' },
-    // Add more mock users if needed or fetch from DB
-];
+interface ProjectMember {
+    id: string;
+    name: string;
+    email: string;
+    avatar_url: string | null;
+}
 
-export default function AssigneeDropdown({ issueId, currentAssignee, className = "" }: AssigneeDropdownProps) {
+export default function AssigneeDropdown({ issueId, currentAssignee, className = "", projectId }: AssigneeDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [assignee, setAssignee] = useState(currentAssignee);
+  const [members, setMembers] = useState<ProjectMember[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     setAssignee(currentAssignee);
   }, [currentAssignee]);
+
+  useEffect(() => {
+      // Fetch members when dropdown opens
+      if (isOpen && projectId) {
+          const fetchMembers = async () => {
+              const supabase = createClient();
+              const { data, error } = await supabase
+                  .from('project_members')
+                  .select(`
+                      user:users (
+                          id,
+                          name,
+                          email,
+                          avatar_url
+                      )
+                  `)
+                  .eq('project_id', projectId);
+
+               if (data) {
+                   const mappedMembers = data.map((item: any) => item.user).filter((u: any) => u !== null);
+                   setMembers(mappedMembers);
+               } else if (error) {
+                   console.error('Error fetching members:', error);
+               }
+          };
+          fetchMembers();
+      }
+  }, [isOpen, projectId]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,20 +68,23 @@ export default function AssigneeDropdown({ issueId, currentAssignee, className =
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const updateAssignee = async (newAssignee: string | null) => {
-    if (newAssignee === assignee) {
+  const updateAssignee = async (newAssigneeName: string | null, newAssigneeId: string | null) => {
+    if (newAssigneeName === assignee) {
         setIsOpen(false);
         return;
     }
 
     const oldAssignee = assignee;
-    setAssignee(newAssignee);
+    setAssignee(newAssigneeName);
     setIsOpen(false);
 
     const supabase = createClient();
     const { error } = await supabase
         .from('issues')
-        .update({ assignee_name: newAssignee })
+        .update({ 
+            assignee_name: newAssigneeName,
+            assignee_id: newAssigneeId 
+        })
         .eq('id', issueId);
 
     if (error) {
@@ -60,8 +95,13 @@ export default function AssigneeDropdown({ issueId, currentAssignee, className =
     }
   };
 
-  const currentAssigneeData = MOCK_USERS.find(u => u.name === assignee) || (assignee ? { name: assignee, id: assignee, color: 'bg-gray-500' } : null);
+  // Helper to get initials
+  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
+  // Find current assignee details if available in fetched members, or try to construct best guess if name matches
+  // Actually if we haven't fetched members yet, we only have the name string. 
+  // We can just show initials of the name string.
+  
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
         <div 
@@ -69,9 +109,9 @@ export default function AssigneeDropdown({ issueId, currentAssignee, className =
             className="cursor-pointer rounded-full hover:opacity-80 transition-opacity"
             title={assignee || "Unassigned"}
         >
-            {assignee && currentAssigneeData ? (
-                <div className={`w-5 h-5 rounded-full ${currentAssigneeData.color} flex items-center justify-center text-[10px] text-white font-bold border border-[#2A2D35]`}>
-                    {currentAssigneeData.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+            {assignee ? (
+                <div className={`w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[10px] text-white font-bold border border-[#2A2D35]`}>
+                    {getInitials(assignee)}
                 </div>
             ) : (
                 <div className="w-5 h-5 rounded-full bg-[#2A2D35] flex items-center justify-center border border-[#3a3e46] text-[#7C7F88]">
@@ -90,7 +130,7 @@ export default function AssigneeDropdown({ issueId, currentAssignee, className =
                 </div>
                 
                 <div 
-                    onClick={(e) => { e.stopPropagation(); updateAssignee(null); }}
+                    onClick={(e) => { e.stopPropagation(); updateAssignee(null, null); }}
                     className="flex items-center gap-2 px-2 py-1.5 mx-1 rounded text-xs text-[#E3E4E6] hover:bg-[#5E6AD2] cursor-pointer group transition-colors"
                 >
                      <div className="w-4 h-4 rounded-full border border-dashed border-[#7C7F88] flex items-center justify-center shrink-0">
@@ -102,17 +142,23 @@ export default function AssigneeDropdown({ issueId, currentAssignee, className =
 
                 <div className="h-[1px] bg-[#2A2D35] my-1 mx-2" />
 
-                {MOCK_USERS.map(user => (
+                {members.length === 0 && (
+                    <div className="px-3 py-2 text-[10px] text-[#7C7F88] text-center">
+                        {projectId ? 'Loading members...' : 'No project context'}
+                    </div>
+                )}
+
+                {members.map(member => (
                     <div
-                        key={user.id}
-                        onClick={(e) => { e.stopPropagation(); updateAssignee(user.name); }}
+                        key={member.id}
+                        onClick={(e) => { e.stopPropagation(); updateAssignee(member.name, member.id); }}
                         className="flex items-center gap-2 px-2 py-1.5 mx-1 rounded text-xs text-[#E3E4E6] hover:bg-[#5E6AD2] cursor-pointer group transition-colors"
                     >
-                         <div className={`w-4 h-4 rounded-full ${user.color} flex items-center justify-center text-[8px] text-white font-bold shrink-0 border border-[#2A2D35]`}>
-                             {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                         <div className={`w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-[8px] text-white font-bold shrink-0 border border-[#2A2D35]`}>
+                             {getInitials(member.name)}
                          </div>
-                         <span className="flex-1">{user.name}</span>
-                         {assignee === user.name && <Check size={12} />}
+                         <span className="flex-1">{member.name}</span>
+                         {assignee === member.name && <Check size={12} />}
                     </div>
                 ))}
             </div>

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import Topbar from "@/components/Topbar";
+import AppShell from '@/components/AppShell';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,6 +19,8 @@ export const metadata: Metadata = {
 };
 
 import { ViewFilterProvider } from "@/context/ViewFilterContext";
+import { UserProvider } from "@/context/UserContext";
+import { IssueSelectionProvider } from "@/context/IssueSelectionContext";
 
 export default function RootLayout({
   children,
@@ -33,15 +34,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--background)] text-[var(--foreground)] overflow-hidden`}
       >
         <ViewFilterProvider>
-            <div className="flex h-screen w-full">
-            <Sidebar />
-            <div className="flex flex-col flex-1 h-full min-w-0">
-                <Topbar />
-                <main className="flex-1 overflow-auto">
+          <UserProvider>
+            <IssueSelectionProvider>
+              <AppShell>
                 {children}
-                </main>
-            </div>
-            </div>
+              </AppShell>
+            </IssueSelectionProvider>
+          </UserProvider>
         </ViewFilterProvider>
       </body>
     </html>

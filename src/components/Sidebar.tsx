@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Inbox, Layers, MoreHorizontal, Plus, Github, Download, ChevronDown, ListFilter, PenSquare, Search, Bell, HelpCircle, User, ChevronLeft, ChevronRight, PanelLeft } from 'lucide-react';
+import { Inbox, Layers, MoreHorizontal, Plus, Github, Download, ChevronDown, ListFilter, PenSquare, Search, Bell, HelpCircle, LogOut, PanelLeft, User as UserIcon } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
-
+import { useUser } from '@/context/UserContext';
 import NewIssueModal from './NewIssueModal';
 
 const Sidebar = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('project');
+  const { user, logout } = useUser();
   
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNewIssueModalOpen, setIsNewIssueModalOpen] = useState(false);
@@ -24,7 +25,7 @@ const Sidebar = () => {
         if (projectId) {
             const supabase = createClient();
             const { data } = await supabase.from('projects').select('name').eq('id', projectId).single();
-            if (data) setProjectName(data.name);
+            if (data) setProjectName((data as { name: string }).name);
         } else {
             setProjectName('');
         }
@@ -36,41 +37,46 @@ const Sidebar = () => {
     ? "w-[64px] transition-[width] duration-300 ease-in-out" 
     : "w-[240px] transition-[width] duration-300 ease-in-out";
 
+  const userInitial = user?.name ? user.name[0].toUpperCase() : 'U';
+
   return (
     <>
     <aside className={`${containerClass} h-screen bg-[#16181D] border-r border-[#2A2D35] flex flex-col items-center py-3 z-50 text-[13px] font-medium font-sans shrink-0`}>
-      {/* Workspace Switcher / Header */}
+      {/* User / Workspace Switcher */}
       <div className={`w-full px-3 mb-2 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
          {isCollapsed ? (
-             <div className="w-8 h-8 rounded-md bg-orange-500 flex items-center justify-center text-white font-bold text-xs cursor-pointer hover:opacity-90 transition-opacity">
-                {projectName ? projectName[0] : 'M'}
+             <div className="w-8 h-8 rounded-md bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs cursor-pointer hover:opacity-90 transition-opacity" title={user?.name || 'User'}>
+                {userInitial}
              </div>
          ) : (
-            <>
-             <div className="flex items-center gap-2 text-[#E3E4E6] p-1 hover:bg-white/5 rounded cursor-pointer transition-colors max-w-[160px]">
-                <div className="w-4 h-4 bg-orange-500 rounded flex items-center justify-center text-[10px] text-white font-bold shrink-0">
-                    {projectName ? projectName[0] : 'M'}
+            <div className="flex items-center justify-between w-full group">
+             <div className="flex items-center gap-2 text-[#E3E4E6] p-1 hover:bg-white/5 rounded cursor-pointer transition-colors max-w-[160px] overflow-hidden">
+                <div className="w-5 h-5 bg-gradient-to-br from-purple-500 to-indigo-600 rounded flex items-center justify-center text-[10px] text-white font-bold shrink-0">
+                    {userInitial}
                 </div>
-                <span className="truncate">{projectName || 'My Practise ...'}</span>
-                <ChevronDown size={14} className="text-[#7C7F88]" />
+                <span className="truncate">{user?.name || 'My Workspace'}</span>
              </div>
-             <PanelLeft 
-                size={16} 
-                className="text-[#7C7F88] hover:text-[#E3E4E6] cursor-pointer" 
-                onClick={toggleSidebar}
-             />
-            </>
+             
+             <button 
+                onClick={logout}
+                className="p-1.5 text-[#7C7F88] hover:text-[#E3E4E6] hover:bg-white/5 rounded transition-colors opacity-0 group-hover:opacity-100"
+                title="Log out"
+            >
+                <LogOut size={14} />
+             </button>
+            </div>
          )}
       </div>
       
-      {isCollapsed && (
-          <div className="mb-4 text-[#7C7F88] hover:text-[#E3E4E6] cursor-pointer" onClick={toggleSidebar}>
-              <PanelLeft size={18} />
+      {/* Collapse Toggle for mobile/desktop preference */}
+      {!isCollapsed && (
+          <div className="absolute top-4 right-[-12px] z-50 opacity-0 hover:opacity-100 transition-opacity">
+               {/* Could add a floating toggle here, but sticking to bottom/internal mainly */}
           </div>
       )}
 
       {/* Content Container */}
-      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden flex flex-col gap-6 px-3">
+      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden flex flex-col gap-6 px-3 mt-4">
          
          {/* Top Section */}
          <div className="flex flex-col gap-0.5">
@@ -110,8 +116,6 @@ const Sidebar = () => {
                     {/* Project Sub-items */}
                     <div className={`${!isCollapsed ? 'pl-6' : ''} flex flex-col gap-0.5`}>
                             <SidebarItem icon={<ListFilter size={16} />} label="Issues" href={`/?project=${projectId}`} active={pathname === '/' && searchParams.get('project') === projectId} collapsed={isCollapsed} />
-                            <SidebarItem icon={<Layers size={16} />} label="Cycles" href="#" collapsed={isCollapsed} />
-                            <SidebarItem icon={<Layers size={16} />} label="Modules" href="#" collapsed={isCollapsed} />
                     </div>
                 </div>
             </div>
@@ -122,14 +126,13 @@ const Sidebar = () => {
              {!isCollapsed && <div className="px-2 pb-2 text-xs font-semibold text-[#7C7F88]">Try</div>}
              <SidebarItem icon={<Download size={isCollapsed ? 18 : 16} />} label="Import issues" href="/import" collapsed={isCollapsed} />
              <SidebarItem icon={<Plus size={isCollapsed ? 18 : 16} />} label="Invite people" href="/invite" collapsed={isCollapsed} />
-             <SidebarItem icon={<Github size={isCollapsed ? 18 : 16} />} label="Link GitHub" href="/github" collapsed={isCollapsed} />
          </div>
       </div>
       
        {/* Footer */}
-       <div className={`h-10 border-t border-[#2A2D35] flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-4 gap-2'} w-full mt-2 text-[#7C7F88] hover:text-[#E3E4E6] cursor-pointer`}>
-           <HelpCircle size={18} />
-           {!isCollapsed && <span>Help & Support</span>}
+       <div className={`h-10 border-t border-[#2A2D35] flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-4 gap-2'} w-full mt-2 text-[#7C7F88] hover:text-[#E3E4E6] cursor-pointer`} onClick={toggleSidebar}>
+           <PanelLeft size={18} />
+           {!isCollapsed && <span>Collapse Sidebar</span>}
        </div>
     </aside>
     

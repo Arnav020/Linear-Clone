@@ -8,6 +8,7 @@ import { SlidersHorizontal } from 'lucide-react';
 import NewIssueTrigger from '@/components/NewIssueTrigger';
 import { useViewFilter } from '@/context/ViewFilterContext';
 import AIPrioritizeButton from './AIPrioritizeButton';
+import BulkActionsMenu from './BulkActionsMenu';
 
 interface ProjectViewsProps {
   issues: any[];
@@ -76,6 +77,7 @@ export default function ProjectViews({ issues }: ProjectViewsProps) {
               </div>
           )}
       </div>
+      <BulkActionsMenu />
     </div>
   );
 }

@@ -1,17 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Folder, Trash2, MoreHorizontal } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import NewProjectModal from './NewProjectModal';
+import { useUser } from '@/context/UserContext';
 
 interface Project {
   id: string;
   name: string;
   description: string | null;
   created_at: string;
+  key: string;
+  color: string | null;
+  icon: string | null;
   issues: { count: number }[];
 }
 
@@ -24,36 +28,32 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { user } = useUser(); // Get current user for deletes
+
+  useEffect(() => { 
+    setProjects(initialProjects);
+  }, [initialProjects]);
 
   const handleProjectCreated = () => {
-    router.refresh(); // Refresh server data
-    // Supabase subscription could go here, or just simple refresh
+    router.refresh(); 
+    // Ideally we would re-fetch projects here or the parent would
+    window.location.reload(); // Force reload to fetch new project data for now
   };
 
   const handleDelete = async (e: React.MouseEvent, projectId: string, projectName: string) => {
-    e.preventDefault(); // Prevent navigation
-    if (!confirm(`Are you sure you want to delete "${projectName}"? This will delete ALL associated issues.`)) return;
+    e.preventDefault(); 
+    if (!confirm(`Are you sure you want to delete "${projectName}"?`)) return;
 
     try {
-      // Manual cascade delete since user requested "delete the project... and the issue that refer to this project"
-      // Assuming ON DELETE CASCADE might not be set in DB, manual is safer for now.
+      // 1. Delete project (Cascade should handle members/issues)
+       const { error } = await supabase.from('projects').delete().eq('id', projectId);
       
-      // 1. Delete issues
-      const { error: issuesError } = await supabase.from('issues').delete().eq('project_id', projectId);
-      if (issuesError) {
-        console.error('Error deleting issues:', issuesError);
-        alert('Failed to delete associated issues.');
-        return;
-      }
-
-      // 2. Delete project
-      const { error: projectError } = await supabase.from('projects').delete().eq('id', projectId);
-      if (projectError) {
-          console.error('Error deleting project:', projectError);
+      if (error) {
+          console.error('Error deleting project:', error);
           alert('Failed to delete project.');
       } else {
-          router.refresh();
           setProjects(prev => prev.filter(p => p.id !== projectId));
+          router.refresh();
       }
     } catch (err) {
         console.error('Unexpected error:', err);
@@ -84,7 +84,7 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
             className="group p-5 bg-[#1C1E22] border border-[#2A2D35] rounded-lg hover:border-[#4B4E57] hover:bg-[#232529] transition-all duration-200 flex flex-col h-36 relative"
           >
             <div className="flex items-start justify-between mb-2">
-                <div className="w-8 h-8 rounded bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                <div className="w-8 h-8 rounded flex items-center justify-center transition-colors" style={{ backgroundColor: (project.color || '#F97316') + '20', color: project.color || '#F97316' }}>
                     <Folder size={18} />
                 </div>
                 
@@ -100,7 +100,10 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
                 </div>
             </div>
             
-            <h3 className="font-medium text-base mb-1 text-gray-100">{project.name || 'Untitled Project'}</h3>
+            <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-mono text-[#878A94]">{project.key}</span>
+                <h3 className="font-medium text-base text-gray-100">{project.name || 'Untitled Project'}</h3>
+            </div>
             <p className="text-sm text-gray-400 line-clamp-1 mb-auto">{project.description || 'No description'}</p>
             
             <div className="mt-4 pt-3 border-t border-[#2A2D35] flex items-center justify-between text-xs text-[#7C7F88]">
