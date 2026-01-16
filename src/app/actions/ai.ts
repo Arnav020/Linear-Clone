@@ -8,7 +8,7 @@ function parseJSON(text: string) {
         return JSON.parse(text);
     } catch (e) {
         // 2. Try removing markdown code blocks
-        const cleaned = text.replace(/```json\n?|```/g, '').trim();
+        const cleaned = text.replace(/```(?:json)?\s*([\s\S]*?)\s*```/ig, '$1').trim();
         try {
             return JSON.parse(cleaned);
         } catch (e2) {

@@ -11,5 +11,8 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export const getGeminiModel = () => {
   return genAI.getGenerativeModel({
     model: 'gemini-2.5-flash',
+    generationConfig: {
+      responseMimeType: 'application/json',
+    },
   });
 };
