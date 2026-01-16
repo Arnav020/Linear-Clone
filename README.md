@@ -48,6 +48,12 @@ Integrated intelligence to speed up issue creation and triage.
     - `Esc`: Close modals
 - **Responsive**: Fluid layout adapting to different screen sizes.
 
+### 🧪 Demo Accounts
+For testing purposes, the database allows login with the following pre-configured users (linked to existing projects and issues):
+- `john@example.com`
+- `jane@example.com`
+- `bob@example.com`
+
 ---
 
 ## 🏗 Tech Stack
