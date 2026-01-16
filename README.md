@@ -20,12 +20,19 @@ A high-fidelity, high-performance clone of [Linear.app](https://linear.app/), bu
     - **"Log Out"**: Securely end your session.
 
 ### 🤖 AI-Powered Workflow (Gemini)
-Integrated intelligence to speed up issue creation and triage.
-- **Smart Autofill**: Type a simple title (e.g., "Fix login bug"), click **"Auto-fill"**, and watch the AI agent:
-    - Draft a detailed markdown description.
-    - Triage the priority (e.g., "High").
-    - Suggest the initial status.
-- **Batch Prioritization**: (Experimental) Select multiple backlog issues and ask AI to identify the most critical ones.
+Integrated intelligence to speed up issue creation, triage, and planning.
+
+1.  **Smart Autofill**:
+    -   Type a simple title (e.g., "Integrate GitHub login") and click **Auto-fill**.
+    -   The AI generates a **complete markdown description**, and automatically selects the appropriate **Status** and **Priority**.
+
+2.  **Issue Analysis**:
+    -   Select an issue and click **Analyze** to get an instant summary.
+    -   Returns a **Complexity Score**, **Reasoning**, and highlights potential **Blockers** alongside a concise summary.
+
+3.  **Smart Prioritization**:
+    -   Click the **"Prioritize"** button to generate a systematic **Plan of Action**.
+    -   The AI scans your backlog and intelligently recommends which issues to tackle next based on urgency and impact.
 
 ### 🛠 Project & Issue Management
 - **Workspaces & Projects**: Multi-project architecture with custom keys and colors.
