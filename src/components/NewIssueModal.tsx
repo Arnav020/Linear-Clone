@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase';
 import { X, ChevronDown, Loader2, Sparkles } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 
 type Project = {
@@ -35,6 +35,7 @@ export default function NewIssueModal({ isOpen, onClose, onIssueCreated }: NewIs
   const modalRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   // Import AI action safely
@@ -55,7 +56,8 @@ export default function NewIssueModal({ isOpen, onClose, onIssueCreated }: NewIs
              setProjects(mappedProjects);
              
              // Auto-select project if only one or based on local storage
-             const savedProjectId = localStorage.getItem('selectedProjectId');
+             const paramProjectId = searchParams.get('project');
+             const savedProjectId = paramProjectId || localStorage.getItem('selectedProjectId');
              const defaultProjectId = savedProjectId && mappedProjects.find(p => p.id === savedProjectId) ? savedProjectId : mappedProjects[0]?.id;
              setProjectId(defaultProjectId || null);
         }
@@ -81,7 +83,7 @@ export default function NewIssueModal({ isOpen, onClose, onIssueCreated }: NewIs
     return () => {
         document.body.style.overflow = 'unset';
     };
-  }, [isOpen, user]);
+  }, [isOpen, user, searchParams]);
 
   const handleAiGenerate = async () => {
     if (!title.trim() || isGenerating) return;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ListView from './ListView';
 import BoardView from './BoardView';
 import ViewToggle from './ViewToggle';
@@ -18,10 +19,19 @@ interface ProjectViewsProps {
 export default function ProjectViews({ issues, refreshIssues }: ProjectViewsProps) {
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
 
+  const searchParams = useSearchParams();
+
   useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'list' || viewParam === 'board') {
+        setViewMode(viewParam);
+        localStorage.setItem('linear_clone_view_mode', viewParam);
+        return;
+    }
+
     const saved = localStorage.getItem('linear_clone_view_mode') as 'list' | 'board';
     if (saved) setViewMode(saved);
-  }, []);
+  }, [searchParams]);
 
   const handleViewChange = (mode: 'list' | 'board') => {
     setViewMode(mode);

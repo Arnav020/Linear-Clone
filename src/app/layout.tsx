@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 import { ViewFilterProvider } from "@/context/ViewFilterContext";
 import { UserProvider } from "@/context/UserContext";
 import { IssueSelectionProvider } from "@/context/IssueSelectionContext";
+import { UIProvider } from "@/context/UIContext";
 
 export default function RootLayout({
   children,
@@ -35,11 +36,13 @@ export default function RootLayout({
       >
         <ViewFilterProvider>
           <UserProvider>
-            <IssueSelectionProvider>
-              <AppShell>
-                {children}
-              </AppShell>
-            </IssueSelectionProvider>
+            <UIProvider>
+              <IssueSelectionProvider>
+                 <AppShell>
+                  {children}
+                 </AppShell>
+              </IssueSelectionProvider>
+            </UIProvider>
           </UserProvider>
         </ViewFilterProvider>
       </body>

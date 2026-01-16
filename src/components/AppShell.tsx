@@ -5,9 +5,13 @@ import Sidebar from '@/components/Sidebar';
 import Topbar from '@/components/Topbar';
 import { Loader2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useUI } from '@/context/UIContext';
+import CommandMenu from './CommandMenu';
+import NewIssueModal from './NewIssueModal';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useUser();
+  const { isNewIssueModalOpen, setNewIssueModalOpen } = useUI();
   const pathname = usePathname();
 
   // Public routes that don't need the app shell
@@ -43,6 +47,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Global Overlays */}
+      <CommandMenu />
+      <NewIssueModal 
+        isOpen={isNewIssueModalOpen} 
+        onClose={() => setNewIssueModalOpen(false)} 
+      />
     </div>
   );
 }
